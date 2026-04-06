@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap");
+@import "tailwindcss";
+@layer base {
+  html {
+    @apply scroll-smooth scroll-pt-20;
+    @apply font-sans antialiased text-dark bg-smoke overflow-x-hidden text-lg;
+    @apply font-display;
+  }
+}
+
+@theme {
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --color-sec: #e45706;
+  --color-main: #1961ac;
+  --color-main-dark: #005bb4;
+  --color-smoke: #f8f8f8;
+  --color-dark: #2e3442;
+  --breakpoint-*: initial;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1280px;
+  /* --breakpoint-xl: 1440px; */
+  @keyframes rotate-pause {
+    0% {
+      transform: rotate(0deg);
+    }
+    28.5% {
+      transform: rotate(360deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  --animate-rotate-pause: rotate-pause 7s linear infinite;
+  /* animate-[rotate-pause_9s_cubic-bezier(1,1,1,1)_infinite] */
+  --animate-rotate-pause-9: rotate-pause 9s cubic-bezier(0.5, 0.5, 0.5, 0.5)
+    infinite;
+  --icon-star: url("~/assets/icons/menu-star.svg");
+
+  /* datapiker */
+}
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+@layer components {
+  .container {
+    @apply mx-auto lg:px-5 lg:w-full px-4;
+    /* max-width: 1460px !important; */
+    /* @apply max-w-[1460px]; */
+  }
+  input::-webkit-calendar-picker-indicator {
+    @apply absolute left-0 top-0 w-full h-full m-0 p-0 cursor-pointer opacity-0;
+  }
+
+  input[type="datetime-local"] {
+    @apply appearance-none;
+  }
+  /* Описываем анимацию выпадающего списка */
+  .dropdown-enter-active {
+    transition: all 0.2s ease-out;
+  }
+  .dropdown-leave-active {
+    transition: all 0.15s ease-in;
+  }
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
