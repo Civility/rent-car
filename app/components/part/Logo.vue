@@ -1,25 +1,36 @@
 <script setup>
-import lOGO_CARS from "@/assets/icons/logo_cars.svg?component";
-import lOGO_NAME from "@/assets/icons/logo_name.svg?component";
-import lOGO_BAG from "@/assets/icons/logo_bag.svg?component";
+  import lOGO_CARS from "@/assets/icons/logo_cars.svg";
+  import lOGO_NAME from "@/assets/icons/logo_name.svg";
+  import lOGO_BAG from "@/assets/icons/logo_bag.svg";
+  defineProps({
+    class1: {
+      type: String,
+      default: null,
+    },
+    class2: {
+      type: String,
+      default: null,
+    },
+    class3: {
+      type: String,
+      default: null,
+    },
+  });
 </script>
 <template>
-  <div class="relative flex justify-center items-center h-32 w-32">
-    <!-- <img
-      src="~/assets/webp/leaf-5.webp"
-      alt="leaf-5"
-      class="w-auto h-22 z-30 absolute -right-1/4 top-1/3 pointer-none"
-    /> -->
-    <UISvg :svg="lOGO_BAG" class="h-32 w-32 text-[#005BB4] absolute" />
+  <div
+    class="relative transition-all flex justify-center items-center h-32 w-32">
+    <UISvg
+      :svg="lOGO_BAG"
+      class="h-32 w-32 text-main-dark absolute"
+      :class="class1" />
     <UISvg
       :svg="lOGO_NAME"
       class="h-22 w-22 text-smoke absolute z-10 origin-center animate-rotate-pause transition-transform duration-100"
-    />
-    <UISvg :svg="lOGO_CARS" class="h-22 w-22 text-smoke absolute z-20" />
-    <!-- <img
-      src="~/assets/webp/shape.webp"
-      alt="logo"
-      class="-z-10 h-62 w-70 absolute right-5 rotate-59 -scale-x-150 pointer-none:"
-    /> -->
+      :class="class2" />
+    <UISvg
+      :svg="lOGO_CARS"
+      class="h-22 w-22 text-smoke absolute z-20"
+      :class="class3" />
   </div>
 </template>

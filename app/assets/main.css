@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap");
 @import "tailwindcss";
 @layer base {
   html {
@@ -6,19 +7,47 @@
     @apply font-sans antialiased text-dark bg-smoke overflow-x-hidden text-lg;
     @apply font-display;
   }
+  /* body {
+    @apply overflow-x-hidden;
+  } */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-unbounded);
+  }
+
+  *::before {
+    font-family: var(--font-unbounded);
+  }
+  a {
+    @apply transition-all duration-200 outline-none cursor-pointer;
+    @apply hover:text-main-dark hover:opacity-90;
+    @apply focus-visible:ring-2 focus-visible:ring-main focus-visible:ring-offset-2 focus-visible:ring-offset-smoke focus-visible:rounded-sm focus-visible:text-main-dark;
+    @apply active:text-sec active:opacity-100;
+  }
 }
 
 @theme {
   --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-unbounded: "Unbounded", ui-sans-serif, sans-serif;
   --color-sec: #e45706;
   --color-main: #1961ac;
   --color-main-dark: #005bb4;
+  --color-main-darkser: #005bb4cc;
   --color-smoke: #f8f8f8;
+  --color-smoke-dark: #dfdfdf;
   --color-dark: #2e3442;
+  --radius-5xl: 3rem;
   --breakpoint-*: initial;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1280px;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  /* --breakpoint-lg: 1280px; */
+  --breakpoint-lg: 90rem;
   /* --breakpoint-xl: 1440px; */
+
   @keyframes rotate-pause {
     0% {
       transform: rotate(0deg);
@@ -36,18 +65,60 @@
     infinite;
   --icon-star: url("~/assets/icons/menu-star.svg");
 
-  /* datapiker */
+  /* leaf */
+  @keyframes leaf-orbit {
+    from {
+      transform: rotate(0deg) translate(18px) rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg) translate(18px) rotate(-360deg);
+    }
+  }
+  --animate-leaf-orbit: leaf-orbit 12s linear infinite;
+  @keyframes leaf-orbit-reverse {
+    from {
+      transform: rotate(0deg) translate(18px) rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg) translate(18px) rotate(360deg);
+    }
+  }
+  --animate-leaf-orbit-reverse: leaf-orbit-reverse 14s linear infinite;
+  @keyframes rules-key {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(7deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  --animate-rules-key: rules-key 2s linear infinite;
+  @keyframes rules-hand {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(5px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  --animate-rules-hand: rules-hand 2s linear infinite;
 }
 @utility container {
   margin-inline: auto;
+  padding-inline: 1rem;
   padding-inline: 2rem;
+  max-width: var(--breakpoint-lg);
+  @variant lg {
+    padding-inline: 1.25rem; /* 20px отступы для больших экранов */
+  }
 }
 @layer components {
-  .container {
-    @apply mx-auto lg:px-5 lg:w-full px-4;
-    /* max-width: 1460px !important; */
-    /* @apply max-w-[1460px]; */
-  }
   input::-webkit-calendar-picker-indicator {
     @apply absolute left-0 top-0 w-full h-full m-0 p-0 cursor-pointer opacity-0;
   }
@@ -66,5 +137,25 @@
   .dropdown-leave-to {
     opacity: 0;
     transform: translateY(8px);
+  }
+  .checkbox-rounded {
+    @apply appearance-none w-5 h-5 rounded-md border border-gray-300 bg-white cursor-pointer;
+  }
+  .checkbox-rounded:checked {
+    @apply bg-main border-main;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .page-enter-active,
+  .page-leave-active {
+    transition: all 0.4s ease-in-out;
+  }
+
+  .page-enter-from,
+  .page-leave-to {
+    opacity: 0;
+    filter: blur(10px); /* Легкий blur для современности, можно убрать */
+    transform: translateY(5px); /* Легкое движение вниз при скрытии */
   }
 }

@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   future: { compatibilityVersion: 4 },
-  experimental: { payloadExtraction: false },
+  experimental: { payloadExtraction: true },
   ssr: true,
   nitro: {
     static: true,
@@ -40,14 +40,9 @@ export default defineNuxtConfig({
 
   css: ["./app/assets/main.css"],
   routeRules: {
-    // // Статические страницы (SSG)
-    "/": { prerender: true },
-    "/about": { prerender: true },
-
-    // // Страница бронирования (SSR) — будет рендериться на сервере при каждом запросе
-    "/booking": { ssr: true },
-
-    // Для API проксируем запросы к нашему Winter CMS
+    "/": { prerender: true }, // статика
+    "/about": { prerender: true }, // статика
+    "/booking": { ssr: true }, // SSR на каждый запрос
     "/api/**": { proxy: "https://wintercms.local/api/**" },
   },
   runtimeConfig: {
@@ -55,5 +50,11 @@ export default defineNuxtConfig({
       API: "https://wintercms.local",
       IMG: "https://wintercms.local/storage/app/uploads/public/",
     },
+  },
+  app: {
+    pageTransition: { name: "page", mode: "out-in" },
+  },
+  build: {
+    transpile: ["@vuepic/vue-datepicker"],
   },
 });

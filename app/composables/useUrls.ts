@@ -15,3 +15,5 @@ export const getImageUrl = (path: string | null) => {
 
   return `${imageBase}${path}`;
 };
+export const IMG = (name: string) =>
+  new URL(`../assets/webp/${name}.webp`, import.meta.url).href;

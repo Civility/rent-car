@@ -1,7 +1,8 @@
+<script setup></script>
 <template>
   <div>
-    <AppHeader />
-    <NuxtPage />
-    <AppFooter />
+    <PartAppHeader />
+    <NuxtPage class="overflow-x-hidden" />
+    <PartAppFooter />
   </div>
 </template>
