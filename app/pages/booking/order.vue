@@ -8,23 +8,133 @@
   import { useBookingStore } from "@/store/booking";
 
   // getImageUrl подтянется через автоимпорт composable.
-  const { submitOrder, $reset } = useBookingStore();
-  const { searchForm, isLoading, orderError } = storeToRefs(useBookingStore());
+  const { submitOrder, $reset, fetchLocations } = useBookingStore();
+  const { searchForm, locations, isLoading, orderError } =
+    storeToRefs(useBookingStore());
   const router = useRouter();
 
-  onMounted(() => {
+  onMounted(async () => {
     if (
       searchForm.value.auto === null ||
       searchForm.value.dateFrom === null ||
       searchForm.value.dateTo === null
     ) {
       router.push("/");
+      return;
+    }
+    if (!locations.value.length) {
+      await fetchLocations();
     }
   });
   const maxDobDate = computed(() => {
     const requiredAge = searchForm.value.auto?.features?.age || 23;
     return subYears(new Date(), requiredAge);
   });
+
+  const formatPrice = (value) => Number(value ?? 0).toFixed(2);
+
+  const getBasePricePerDay = (car) => {
+    return Number(car?.price?.priceDay ?? 0);
+  };
+
+  const getDiscountAmount = (car) => {
+    return Number(car?.price?.discount ?? 0);
+  };
+
+  const getFinalPricePerDay = (car) => {
+    return Math.max(getBasePricePerDay(car) - getDiscountAmount(car), 0);
+  };
+
+  const hasDiscount = (car) => {
+    return (
+      getDiscountAmount(car) > 0 &&
+      getFinalPricePerDay(car) < getBasePricePerDay(car)
+    );
+  };
+
+  const getLocationLabel = (code) => {
+    const location = locations.value.find((item) => item.value === code);
+    return location?.label || code || "Not selected";
+  };
+
+  const formatDateValue = (value) => {
+    if (!value) return "Not selected";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  };
+
+  const formatTimeValue = (time) => {
+    if (
+      !time ||
+      typeof time.hours !== "number" ||
+      typeof time.minutes !== "number"
+    ) {
+      return "00:00";
+    }
+
+    return `${String(time.hours).padStart(2, "0")}:${String(time.minutes).padStart(2, "0")}`;
+  };
+
+  const rentalDays = computed(() => {
+    if (!searchForm.value.dateFrom || !searchForm.value.dateTo) {
+      return 1;
+    }
+
+    const start = new Date(searchForm.value.dateFrom);
+    const end = new Date(searchForm.value.dateTo);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return 1;
+    }
+
+    const diffMs = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 1;
+  });
+
+  const selectedCarBasePrice = computed(() => {
+    return getBasePricePerDay(searchForm.value.auto);
+  });
+
+  // const selectedCarDiscount = computed(() => {
+  //   return getDiscountAmount(searchForm.value.auto);
+  // });
+
+  const selectedCarFinalPrice = computed(() => {
+    return getFinalPricePerDay(searchForm.value.auto);
+  });
+
+  const selectedCarHasDiscount = computed(() => {
+    return hasDiscount(searchForm.value.auto);
+  });
+
+  const selectedCarTotal = computed(() => {
+    return selectedCarFinalPrice.value * rentalDays.value;
+  });
+
+  const pickupLocationLabel = computed(() => {
+    return getLocationLabel(searchForm.value.location);
+  });
+
+  const dropoffLocationLabel = computed(() => {
+    const code = searchForm.value.differentLocation
+      ? searchForm.value.location
+      : searchForm.value.returnLocation;
+
+    return getLocationLabel(code);
+  });
+
   // --- Ловушки на спам (натуральный анти-бот) ---
   const startTime = ref(0);
   const trapFieldName = ref("website_url");
@@ -85,25 +195,41 @@
     const isValid = await v$.value.$validate();
     if (!isValid) return;
 
-    // ПРОВЕРКА ЛОВУШЕК НА СПАМ (отсекаем скрипты)
     const timeElapsed = Date.now() - startTime.value;
     if (timeElapsed < 2500 || form.isConsent || trapValue.value !== "") {
       console.log("Spam detected. Blocked silently.");
-      return; // Тихо блокируем
+      return;
     }
 
-    // Вызываем экшен из Pinia
     const result = await submitOrder(form);
 
-    if (result.success) {
-      // console.log("Order successful!", result.data);
-      // Можно перенаправить на страницу успешного бронирования:
-      // router.push("/booking/success");
+    if (!result.success) return;
 
-      // И очистить стор
-      $reset();
-    }
+    isSuccessModalOpen.value = true;
+
+    successRedirectTimeout = setTimeout(async () => {
+      await handleSuccessModalClose();
+    }, 3500);
   };
+  const isSuccessModalOpen = ref(false);
+  let successRedirectTimeout = null;
+
+  const handleSuccessModalClose = async () => {
+    isSuccessModalOpen.value = false;
+
+    if (successRedirectTimeout) {
+      clearTimeout(successRedirectTimeout);
+      successRedirectTimeout = null;
+    }
+
+    $reset();
+    await router.push("/");
+  };
+  onBeforeUnmount(() => {
+    if (successRedirectTimeout) {
+      clearTimeout(successRedirectTimeout);
+    }
+  });
 </script>
 
 <template>
@@ -320,7 +446,7 @@
                 'opacity-50 bg-zinc-500! cursor-not-allowed':
                   isFormDisabled || isLoading,
               }"
-              :disabled="isFormDisabled || isLoading">
+              :disabled="isFormDisabled || isLoading || isSuccessModalOpen">
               <span v-if="isLoading">Processing...</span>
               <span v-else>Order a car</span>
             </UIBtn>
@@ -393,11 +519,13 @@
                 class="flex items-center gap-1.5 justify-center"
                 title="Transmission">
                 ⚙️
-                <span class="text-xs">{{
-                  searchForm.auto.features.transmission === "A"
-                    ? "Auto"
-                    : "Manual"
-                }}</span>
+                <span class="text-xs">
+                  {{
+                    searchForm.auto.features.transmission === "A"
+                      ? "Auto"
+                      : "Manual"
+                  }}
+                </span>
               </div>
               <div
                 v-if="searchForm.auto.features.ac"
@@ -413,16 +541,90 @@
               </div>
             </div>
 
+            <!-- Данные бронирования -->
+            <div
+              class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="font-bold text-gray-500 uppercase">Pick-up</span>
+                <span class="text-right font-semibold text-gray-800">
+                  {{ pickupLocationLabel }}
+                </span>
+              </div>
+
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="font-bold text-gray-500 uppercase">Drop-off</span>
+                <span class="text-right font-semibold text-gray-800">
+                  {{ dropoffLocationLabel }}
+                </span>
+              </div>
+
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="font-bold text-gray-500 uppercase">From</span>
+                <span class="text-right font-semibold text-gray-800">
+                  {{ formatDateValue(searchForm.dateFrom) }}
+                  {{ formatTimeValue(searchForm.timeFrom) }}
+                </span>
+              </div>
+
+              <div class="flex justify-between gap-4 text-sm">
+                <span class="font-bold text-gray-500 uppercase">To</span>
+                <span class="text-right font-semibold text-gray-800">
+                  {{ formatDateValue(searchForm.dateTo) }}
+                  {{ formatTimeValue(searchForm.timeTo) }}
+                </span>
+              </div>
+
+              <div
+                class="flex justify-between gap-4 text-sm pt-3 border-t border-gray-200">
+                <span class="font-bold text-gray-500 uppercase"
+                  >Rental period</span
+                >
+                <span class="text-right font-semibold text-gray-800">
+                  {{ rentalDays }} day<span v-if="rentalDays > 1">s</span>
+                </span>
+              </div>
+            </div>
+
             <!-- Цена -->
-            <div class="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div class="mt-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
               <div class="flex justify-between items-center mb-1">
                 <span class="text-sm font-bold text-gray-500 uppercase">
                   Price per day
                 </span>
-                <span class="font-bold text-gray-700">
-                  € {{ searchForm.auto.price.priceDay }}
-                </span>
+
+                <div class="text-right">
+                  <div
+                    v-if="selectedCarHasDiscount"
+                    class="text-sm text-gray-400 line-through decoration-red-500 decoration-2">
+                    € {{ formatPrice(selectedCarBasePrice) }}
+                  </div>
+
+                  <div class="font-bold text-gray-700">
+                    € {{ formatPrice(selectedCarFinalPrice) }}
+                  </div>
+                </div>
               </div>
+
+              <!-- <div
+                v-if="selectedCarHasDiscount"
+                class="flex justify-between items-center mb-1"
+              >
+                <span class="text-sm font-bold text-gray-500 uppercase">
+                  Car discount
+                </span>
+                <span class="font-bold text-green-600">
+                  - € {{ formatPrice(selectedCarDiscount) }}
+                </span>
+              </div> -->
+
+              <!-- <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-bold text-gray-500 uppercase">
+                  Rental days
+                </span>
+                <span class="font-bold text-gray-700">
+                  {{ rentalDays }}
+                </span>
+              </div> -->
 
               <div
                 class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
@@ -430,11 +632,12 @@
                   class="text-lg font-black bg-linear-to-t from-dark to-sec bg-clip-text text-transparent uppercase tracking-wide">
                   Total
                 </span>
-                <span class="text-2xl font-black">
-                  €{{
-                    searchForm.auto.totalPrice || searchForm.auto.price.priceDay
-                  }}
-                </span>
+
+                <div class="text-right">
+                  <div class="text-2xl font-black">
+                    € {{ formatPrice(selectedCarTotal) }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -447,5 +650,18 @@
         </div>
       </aside>
     </div>
+    <UIModal
+      v-model="isSuccessModalOpen"
+      type="success"
+      title="Your request has been sent successfully."
+      message="If the manager has any questions, they will call you back shortly to clarify the trip details."
+      button-text="Back to home"
+      @close="handleSuccessModalClose"
+      @confirm="handleSuccessModalClose">
+      <template #note>
+        Our manager will review your booking and contact you shortly if any
+        details need clarification.
+      </template>
+    </UIModal>
   </main>
 </template>

@@ -70,39 +70,70 @@ export const useBookingStore = defineStore("booking", {
       this.orderSuccess = false;
 
       try {
-        // Формируем итоговый объект (Search Data + Car Data + Driver Data)
-        const orderPayload = {
-          searchData: {
-            pickUp: this.searchForm.location,
-            dropOff: this.searchForm.differentLocation
-              ? this.searchForm.location
-              : this.searchForm.returnLocation,
-            dateFrom: this.searchForm.formattedDateFrom,
-            dateTo: this.searchForm.formattedDateTo,
-          },
-          carId: this.searchForm.auto?.id,
-          driver: {
-            firstName: driverDetails.firstName,
-            lastName: driverDetails.lastName,
-            email: driverDetails.email,
-            phone: driverDetails.phone,
-            dateOfBirth: driverDetails.dateOfBirth,
-          },
+        if (!this.searchForm.auto?.id) {
+          throw new Error("Car is not selected.");
+        }
+
+        if (!this.locations.length) {
+          await this.fetchLocations();
+        }
+
+        const pickupCode = this.searchForm.location;
+        const dropoffCode = this.searchForm.differentLocation
+          ? this.searchForm.location
+          : this.searchForm.returnLocation;
+
+        const pickupLocation = this.locations.find(
+          (location) => location.value === pickupCode,
+        );
+        const dropoffLocation = this.locations.find(
+          (location) => location.value === dropoffCode,
+        );
+
+        if (!pickupLocation?.id || !dropoffLocation?.id) {
+          throw new Error("Pickup or drop-off location is invalid.");
+        }
+
+        const formatDob = (value) => {
+          if (!value) return null;
+
+          const date = new Date(value);
+
+          if (Number.isNaN(date.getTime())) {
+            return null;
+          }
+
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+
+          return `${year}-${month}-${day}`;
         };
 
-        // Запрос к вашему Nuxt API (прокси на Laravel/WinterCMS)
-        // Замените '/api/orders' на реальный путь вашего бэкенда
-        const response = await $fetch("/api/orders", {
+        const payload = {
+          car_id: this.searchForm.auto.id,
+          location_id: pickupLocation.id,
+          return_location_id: dropoffLocation.id,
+          date_from: this.searchForm.formattedDateFrom,
+          date_to: this.searchForm.formattedDateTo,
+          first_name: driverDetails.firstName,
+          last_name: driverDetails.lastName,
+          email: driverDetails.email,
+          phone: driverDetails.phone,
+          dob: formatDob(driverDetails.dateOfBirth),
+        };
+
+        const response = await $fetch(getApiUrl("/api/orders"), {
           method: "POST",
-          body: orderPayload,
+          body: payload,
         });
 
         this.orderSuccess = true;
         return { success: true, data: response };
       } catch (error) {
         console.error("Order submission failed:", error);
-        this.orderError =
-          error.data?.message || "Something went wrong. Please try again.";
+        this.orderError = error?.data?.message;
+        error?.message || "Something went wrong. Please try again.";
         return { success: false, error: this.orderError };
       } finally {
         this.isLoading = false;

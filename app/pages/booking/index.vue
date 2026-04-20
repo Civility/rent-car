@@ -28,9 +28,10 @@ const handleSelectCar = (car) => {
 };
 
 const sortOptions = [
-  { label: "Recommended", value: "recommended" },
+  { label: "Best deals", value: "discount" },
   { label: "Lower price", value: "price_asc" },
   { label: "Higher price", value: "price_desc" },
+  { label: "Recommended", value: "recommended" },
 ];
 
 const benefits = [
@@ -116,7 +117,23 @@ const seatsProgress = computed(
 );
 
 const { calculateTotal } = usePriceCalculator();
-const rentalDays = ref(10);
+const rentalDays = computed(() => {
+  if (!searchForm.value.dateFrom || !searchForm.value.dateTo) {
+    return 1;
+  }
+
+  const start = new Date(searchForm.value.dateFrom);
+  const end = new Date(searchForm.value.dateTo);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return 1;
+  }
+
+  const diffMs = end.getTime() - start.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 ? diffDays : 1;
+});
 
 const currentFilters = computed(() => {
   const seatIndex = Number(filters.seats) || 0;
@@ -162,7 +179,7 @@ const carsWithTotal = computed(() => {
       finalPriceDay,
       hasDiscount: hasDiscount(car),
       totalPrice: Number(calculateTotal(finalPriceDay, rentalDays.value)),
-      oldTotalPrice: Number(calculateTotal(basePriceDay, rentalDays.value)),
+      // oldTotalPrice: Number(calculateTotal(basePriceDay, rentalDays.value)),
     };
   });
 });
@@ -666,15 +683,15 @@ const resetFilters = () => {
               </p>
 
               <p
-                class="text-xs font-bold tracking-wider uppercase mb-0.5 bg-linear-to-t from-dark to-dark bg-clip-text text-transparent w-fit"
+                class="text-md font-bold tracking-wider uppercase mb-0.5 bg-linear-to-t from-dark to-dark bg-clip-text text-transparent w-fit"
               >
                 TOTAL
-                <span
+                <!-- <span
                   v-if="car.hasDiscount"
                   class="line-through text-gray-400 mr-2"
                 >
-                  <!-- €{{ formatPrice(car.oldTotalPrice) }} -->
-                </span>
+                  €{{ formatPrice(car.oldTotalPrice) }}
+                </span> -->
                 <strong>€{{ formatPrice(car.totalPrice) }}</strong>
               </p>
             </div>

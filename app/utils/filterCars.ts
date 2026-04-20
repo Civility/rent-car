@@ -111,18 +111,48 @@ export function applyFilters(
   }
 
   // 6. Сортировка.
+
+  const getDiscountAmount = (car: FilterableCar): number => {
+    return Number(car.price?.discount ?? 0);
+  };
+
+  const getFinalPricePerDay = (car: FilterableCar): number => {
+    return Math.max(getPricePerDay(car) - getDiscountAmount(car), 0);
+  };
   switch (filters.sortBy || "recommended") {
+    case "discount":
+      result.sort((a, b) => {
+        const discountDiff = getDiscountAmount(b) - getDiscountAmount(a);
+
+        if (discountDiff !== 0) {
+          return discountDiff;
+        }
+
+        return getFinalPricePerDay(a) - getFinalPricePerDay(b);
+      });
+      break;
     case "price_asc":
-      result.sort((a, b) => getPricePerDay(a) - getPricePerDay(b));
+      result.sort((a, b) => getFinalPricePerDay(a) - getFinalPricePerDay(b));
       break;
 
     case "price_desc":
-      result.sort((a, b) => getPricePerDay(b) - getPricePerDay(a));
+      result.sort((a, b) => getFinalPricePerDay(b) - getFinalPricePerDay(a));
       break;
 
     case "recommended":
+      result.sort((a, b) => {
+        const discountDiff = getDiscountAmount(b) - getDiscountAmount(a);
+
+        if (discountDiff !== 0) {
+          return discountDiff;
+        }
+
+        return getFinalPricePerDay(a) - getFinalPricePerDay(b);
+      });
+      break;
+
     default:
-      result.sort((a, b) => a.id - b.id);
+      result.sort((a, b) => getFinalPricePerDay(a) - getFinalPricePerDay(b));
       break;
   }
 
