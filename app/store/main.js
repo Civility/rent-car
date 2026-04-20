@@ -1,22 +1,19 @@
 import { defineStore } from "pinia";
-
+// import { useBookingStore } from "./booking.js";
 export const useMainStore = defineStore("main", {
   state: () => ({
     isLoading: false,
-    lastActive: null,
     lang: "ru", // el, de, en
-    currency: null, // Добавлено для правильной реактивности Pinia
   }),
   actions: {
     setLoading(status) {
       this.isLoading = status;
     },
-    setCurrency(currency) {
-      this.currency = currency;
-    },
+
     setLang(newLang) {
       this.lang = newLang;
     },
+
     // Экшен для отправки формы обратной связи
     async sendCallMeBack(payload) {
       this.setLoading(true);

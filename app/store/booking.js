@@ -1,7 +1,7 @@
 // app/store/booking.js
 import { defineStore } from "pinia";
-
-// import { useMainStore } from "./main.js";
+// const config = useRuntimeConfig;
+import { useMainStore } from "./main.js";
 export const useBookingStore = defineStore("booking", {
   state: () => ({
     searchForm: {
@@ -14,29 +14,55 @@ export const useBookingStore = defineStore("booking", {
       timeTo: { hours: 0, minutes: 0, seconds: 0 },
       auto: null,
     },
+    locations: [],
+    cars: [],
     isLoading: false,
     orderError: null,
     orderSuccess: false,
   }),
   actions: {
-    setSearchForm(payload) {
-      Object.assign(this.searchForm, payload, { lastActive: Date.now() });
+    async fetchLocations() {
+      // if (!force) {
+      //   return { success: true, data: this.locations };
+      // }
+      const main = useMainStore();
+      main.setLoading(true);
+
+      try {
+        const response = await $fetch(getApiUrl("/api/locations"));
+        this.locations = response.map((location) => ({
+          id: location.id,
+          value: location.code,
+          label: location.name,
+        }));
+
+        return { success: true, data: this.locations };
+      } catch (error) {
+        console.error("error locations", error);
+        return { success: false, error };
+      } finally {
+        main.setLoading(false);
+      }
     },
-    $reset() {
-      Object.assign(this.searchForm, {
-        location: "SKG",
-        differentLocation: true,
-        returnLocation: "SKG",
-        dateFrom: null,
-        timeFrom: { hours: 0, minutes: 0, seconds: 0 },
-        dateTo: null,
-        timeTo: { hours: 0, minutes: 0, seconds: 0 },
-        auto: null,
-        formattedDateFrom: undefined,
-        formattedDateTo: undefined,
-      });
-      this.orderError = null;
-      this.orderSuccess = false;
+    async fetchCars() {
+      const main = useMainStore();
+      main.setLoading(true);
+      try {
+        const response = await $fetch(getApiUrl("/api/cars"), {
+          query: {
+            date_from: this.searchForm.dateFrom,
+            date_to: this.searchForm.dateTo,
+          },
+        });
+        this.cars = response;
+        return { success: true, data: response };
+      } catch (error) {
+        console.error("Error Cars:", error);
+        this.cars = [];
+        return { success: false, error };
+      } finally {
+        main.setLoading(false);
+      }
     },
     async submitOrder(driverDetails) {
       this.isLoading = true;
@@ -81,6 +107,44 @@ export const useBookingStore = defineStore("booking", {
       } finally {
         this.isLoading = false;
       }
+    },
+    setLocation(location) {
+      this.searchForm.location = location;
+
+      if (this.searchForm.differentLocation) {
+        this.searchForm.returnLocation = location;
+      }
+    },
+
+    setReturnLocation(returnLocation) {
+      this.searchForm.returnLocation = returnLocation;
+    },
+
+    setDifferentLocation(differentLocation) {
+      this.searchForm.differentLocation = differentLocation;
+
+      if (differentLocation) {
+        this.searchForm.returnLocation = this.searchForm.location;
+      }
+    },
+    setSearchForm(payload) {
+      Object.assign(this.searchForm, payload, { lastActive: Date.now() });
+    },
+    $reset() {
+      Object.assign(this.searchForm, {
+        location: "SKG",
+        differentLocation: true,
+        returnLocation: "SKG",
+        dateFrom: null,
+        timeFrom: { hours: 0, minutes: 0, seconds: 0 },
+        dateTo: null,
+        timeTo: { hours: 0, minutes: 0, seconds: 0 },
+        auto: null,
+        formattedDateFrom: undefined,
+        formattedDateTo: undefined,
+      });
+      this.orderError = null;
+      this.orderSuccess = false;
     },
   },
 });

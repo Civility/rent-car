@@ -6,6 +6,8 @@
   import "@vuepic/vue-datepicker/dist/main.css";
   import { useRouter } from "vue-router";
   import { useBookingStore } from "@/store/booking";
+
+  // getImageUrl подтянется через автоимпорт composable.
   const { submitOrder, $reset } = useBookingStore();
   const { searchForm, isLoading, orderError } = storeToRefs(useBookingStore());
   const router = useRouter();
@@ -112,8 +114,8 @@
         <h1 class="text-3xl font-extrabold mb-2">Driver details</h1>
 
         <form
-          @submit.prevent="handleSubmit"
-          class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+          class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6"
+          @submit.prevent="handleSubmit">
           <!-- Hiding Spam Traps -->
           <div
             class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
@@ -122,9 +124,9 @@
               <span>consent to data processing</span>
               <input
                 id="trap-consent"
+                v-model="form.isConsent"
                 name="trap-consent"
                 type="checkbox"
-                v-model="form.isConsent"
                 tabindex="-1" />
             </label>
 
@@ -132,9 +134,9 @@
               <span>Leave empty if human</span>
               <input
                 id="website_url"
+                v-model="trapValue"
                 type="text"
                 name="website_url"
-                v-model="trapValue"
                 tabindex="-1"
                 autocomplete="off" />
               <!-- Исправлено на валидный "off" -->
@@ -149,10 +151,10 @@
                   >First name*</span
                 >
                 <input
+                  v-model="form.firstName"
                   name="firstName"
                   autocomplete="given-name"
                   type="text"
-                  v-model="form.firstName"
                   :class="[
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.firstName.$error ? 'border-red-400' : 'border-gray-300',
@@ -173,10 +175,10 @@
                   >Last name*</span
                 >
                 <input
+                  v-model="form.lastName"
                   name="lastName"
                   autocomplete="family-name"
                   type="text"
-                  v-model="form.lastName"
                   :class="[
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.lastName.$error ? 'border-red-400' : 'border-gray-300',
@@ -192,8 +194,6 @@
 
             <!-- Date of Birth -->
             <div class="relative">
-              <!-- ИСПРАВЛЕНИЕ: Заменили label на div, так как внутри ClientOnly инпут 
-                   не существует на этапе SSR, из-за чего линтер считал label пустым! -->
               <div class="block cursor-pointer relative z-10">
                 <span class="block text-sm font-bold mb-2 text-zinc-900"
                   >Date of birth*</span
@@ -234,10 +234,10 @@
                   >Email*</span
                 >
                 <input
+                  v-model="form.email"
                   name="email"
                   autocomplete="email"
                   type="email"
-                  v-model="form.email"
                   :class="[
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.email.$error ? 'border-red-400' : 'border-gray-300',
@@ -258,10 +258,10 @@
                   >Phone number*</span
                 >
                 <input
+                  v-model="form.phone"
                   name="phone"
                   autocomplete="tel"
                   type="tel"
-                  v-model="form.phone"
                   :class="[
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.phone.$error ? 'border-red-400' : 'border-gray-300',
@@ -282,9 +282,9 @@
           <div class="relative">
             <label class="flex items-start gap-3 cursor-pointer py-1">
               <input
+                v-model="form.privacyPolicy"
                 name="privacyPolicy"
                 type="checkbox"
-                v-model="form.privacyPolicy"
                 class="mt-1 w-5 h-5 accent-sec shrink-0" />
               <span class="text-sm font-medium text-gray-700">
                 I have read, understood and I accept the
@@ -328,7 +328,6 @@
         </form>
       </div>
 
-      <!-- ПРАВАЯ ЧАСТЬ: Выбранные данные (блок-плейсхолдер) -->
       <!-- ПРАВАЯ ЧАСТЬ: Выбранные данные -->
       <aside class="lg:col-span-1">
         <div
@@ -340,10 +339,16 @@
           <div
             v-if="searchForm.auto"
             class="flex flex-col gap-4">
-            <!-- Картинка -->
+            <!-- Картинка выбранной машины -->
             <div class="h-40 w-full flex items-center justify-center">
               <img
-                :src="searchForm.auto.image || searchForm.auto.images?.[0]"
+                :src="
+                  searchForm.auto.img
+                    ? getImageUrl(searchForm.auto.img)
+                    : searchForm.auto.images?.[0]
+                      ? getImageUrl(searchForm.auto.images[0])
+                      : '/car-placeholder.png'
+                "
                 :alt="searchForm.auto.name"
                 class="max-h-full max-w-full object-contain mix-blend-multiply" />
             </div>
@@ -351,9 +356,9 @@
             <!-- Название и Категория -->
             <div class="text-center pb-4 border-b border-gray-100">
               <span
-                class="text-xs font-bold text-gray-500 uppercase tracking-widest"
-                >{{ searchForm.auto.category }}</span
-              >
+                class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                {{ searchForm.auto.category.name }}
+              </span>
               <h3 class="text-xl font-black text-gray-900 mt-1 uppercase">
                 {{ searchForm.auto.name }}
               </h3>
@@ -364,10 +369,10 @@
               class="grid grid-cols-3 gap-y-4 gap-x-2 text-sm font-bold text-gray-700 py-2">
               <div
                 class="flex items-center gap-1.5 justify-center"
-                title="Passengers">
+                title="seats">
                 👥
                 <span class="text-xs">{{
-                  searchForm.auto.features.passengers
+                  searchForm.auto.features.seats
                 }}</span>
               </div>
               <div
@@ -411,25 +416,24 @@
             <!-- Цена -->
             <div class="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
               <div class="flex justify-between items-center mb-1">
-                <span class="text-sm font-bold text-gray-500 uppercase"
-                  >Price per day</span
-                >
-                <span class="font-bold text-gray-700"
-                  >€ {{ searchForm.auto.priceDay }}</span
-                >
+                <span class="text-sm font-bold text-gray-500 uppercase">
+                  Price per day
+                </span>
+                <span class="font-bold text-gray-700">
+                  € {{ searchForm.auto.price.priceDay }}
+                </span>
               </div>
-              <!-- Если у вас в стейте нет сохраненного totalPrice, пока выводим так. 
-                   Если нужно пересчитать дни, можно импортировать usePriceCalculator здесь так же, как в index.vue -->
+
               <div
                 class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
                 <span
-                  class="text-lg font-black bg-linear-to-t from-dark to-sec bg-clip-text text-transparent uppercase tracking-wide"
-                  >Total</span
-                >
+                  class="text-lg font-black bg-linear-to-t from-dark to-sec bg-clip-text text-transparent uppercase tracking-wide">
+                  Total
+                </span>
                 <span class="text-2xl font-black">
-                  <!-- Если у машины есть totalPrice из index.vue (вы можете сохранять его в стейт), выводим его.
-                        Иначе можем просто показать priceDay для примера. -->
-                  €{{ searchForm.auto.totalPrice || searchForm.auto.priceDay }}
+                  €{{
+                    searchForm.auto.totalPrice || searchForm.auto.price.priceDay
+                  }}
                 </span>
               </div>
             </div>

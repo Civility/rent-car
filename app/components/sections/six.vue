@@ -1,178 +1,182 @@
 <script setup>
-  import { useVuelidate } from "@vuelidate/core";
-  // import { storeToRefs } from "pinia";
-  import { useMainStore } from "@/store/main";
-  import ICON_VIBER from "@/assets/icons/viber.svg";
-  import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
-  import ICON_FACEBOOK from "@/assets/icons/facebook.svg";
-  import {
-    required,
-    email,
-    minLength,
-    maxLength,
-    helpers,
-  } from "@vuelidate/validators";
-  import { vMaska } from "maska/vue";
-  import { format } from "date-fns";
+import { useVuelidate } from "@vuelidate/core";
+// import { storeToRefs } from "pinia";
+import { useMainStore } from "@/store/main";
+import ICON_VIBER from "@/assets/icons/viber.svg";
+import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
+import ICON_FACEBOOK from "@/assets/icons/facebook.svg";
+import {
+  required,
+  email,
+  minLength,
+  maxLength,
+  helpers,
+} from "@vuelidate/validators";
+import { vMaska } from "maska/vue";
+import { format } from "date-fns";
 
-  const { sendCallMeBack } = useMainStore();
-  // const {  } = storeToRefs(useAuthStore())
-  const startTime = ref(0);
-  const trapFieldName = ref("website_url");
-  const trapValue = ref("");
-  onMounted(() => {
-    startTime.value = Date.now();
-    // Генерируем случайное имя ловушки (например: website_7a3b, company_9f1c)
-    const prefixes = ["website", "company", "url", "fax"];
-    trapFieldName.value =
-      prefixes[Math.floor(Math.random() * prefixes.length)] +
-      "_" +
-      Math.random().toString(36).substr(2, 4);
-  });
-  const form = ref({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-    isConsent: false,
-  });
-  const noLinksOrHtml = helpers.regex(/^(?!.*(<[^>]+>|https?:\/\/|www\.)).*/i);
-  const isSubmitted = ref(false);
-  const lettersOnly = helpers.regex(/^[\p{L}\s\-']+$/u);
-  const minTwoWords = (value) => {
-    if (!value) return false;
-    const words = value.trim().split(/\s+/);
-    return words.length >= 2;
+const { sendCallMeBack } = useMainStore();
+// const {  } = storeToRefs(useAuthStore())
+const startTime = ref(0);
+const trapFieldName = ref("website_url");
+const trapValue = ref("");
+onMounted(() => {
+  startTime.value = Date.now();
+  // Генерируем случайное имя ловушки (например: website_7a3b, company_9f1c)
+  const prefixes = ["website", "company", "url", "fax"];
+  trapFieldName.value =
+    prefixes[Math.floor(Math.random() * prefixes.length)] +
+    "_" +
+    Math.random().toString(36).substr(2, 4);
+});
+const form = ref({
+  name: "",
+  email: "",
+  phone: "",
+  message: "",
+  isConsent: false,
+});
+const noLinksOrHtml = helpers.regex(/^(?!.*(<[^>]+>|https?:\/\/|www\.)).*/i);
+const isSubmitted = ref(false);
+const lettersOnly = helpers.regex(/^[\p{L}\s\-']+$/u);
+const minTwoWords = (value) => {
+  if (!value) return false;
+  const words = value.trim().split(/\s+/);
+  return words.length >= 2;
+};
+// Правила валидации
+const rules = {
+  name: {
+    required: helpers.withMessage("Name is required", required),
+    minLength: helpers.withMessage("Minimum 2 characters", minLength(2)),
+    maxLength: helpers.withMessage("Maximum 32 characters", maxLength(32)),
+    lettersOnly: helpers.withMessage(
+      "Name must contain only letters",
+      lettersOnly,
+    ),
+  },
+  email: {
+    required: helpers.withMessage("Email is required", required),
+    email: helpers.withMessage("Invalid email address", email),
+  },
+  // Указываем минимальную длину с учетом маски, например: +1 (123) 456-7890 (длина 17)
+  // Но вы можете адаптировать длину под свою страну
+  phone: {
+    required: helpers.withMessage("Phone is required", required),
+    minLength: helpers.withMessage("Phone number is incomplete", minLength(17)),
+  },
+  message: {
+    required: helpers.withMessage("Message is required", required),
+    minLength: helpers.withMessage("Minimum 6 characters", minLength(6)),
+    minTwoWords: helpers.withMessage(
+      "Message must contain at least 2 words",
+      minTwoWords,
+    ),
+    noLinksOrHtml: helpers.withMessage(
+      "Links and HTML tags are not allowed",
+      noLinksOrHtml,
+    ),
+  },
+};
+
+const v$ = useVuelidate(rules, form, { $autoDirty: true });
+// Переменная для таймера (добавьте её где-нибудь до handleSubmit, например, рядом с isSubmitted = ref(false))
+let submitTimeout = null;
+const handleSubmit = async () => {
+  isSubmitted.value = false;
+  const isValid = await v$.value.$validate();
+
+  if (!isValid) return;
+  const timeElapsed = Date.now() - startTime.value;
+
+  if (timeElapsed < 3000 || form.value.isConsent || trapValue.value !== "") {
+    console.log("Spam detected. Blocked silently.");
+    isSubmitted.value = true;
+    return;
+  }
+
+  const sentAt = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+
+  const payload = {
+    name: form.value.name,
+    email: form.value.email,
+    phone: form.value.phone,
+    message: form.value.message,
+    sentAt: sentAt,
   };
-  // Правила валидации
-  const rules = {
-    name: {
-      required: helpers.withMessage("Name is required", required),
-      minLength: helpers.withMessage("Minimum 2 characters", minLength(2)),
-      maxLength: helpers.withMessage("Maximum 32 characters", maxLength(32)),
-      lettersOnly: helpers.withMessage(
-        "Name must contain only letters",
-        lettersOnly,
-      ),
-    },
-    email: {
-      required: helpers.withMessage("Email is required", required),
-      email: helpers.withMessage("Invalid email address", email),
-    },
-    // Указываем минимальную длину с учетом маски, например: +1 (123) 456-7890 (длина 17)
-    // Но вы можете адаптировать длину под свою страну
-    phone: {
-      required: helpers.withMessage("Phone is required", required),
-      minLength: helpers.withMessage(
-        "Phone number is incomplete",
-        minLength(17),
-      ),
-    },
-    message: {
-      required: helpers.withMessage("Message is required", required),
-      minLength: helpers.withMessage("Minimum 6 characters", minLength(6)),
-      minTwoWords: helpers.withMessage(
-        "Message must contain at least 2 words",
-        minTwoWords,
-      ),
-      noLinksOrHtml: helpers.withMessage(
-        "Links and HTML tags are not allowed",
-        noLinksOrHtml,
-      ),
-    },
-  };
 
-  const v$ = useVuelidate(rules, form, { $autoDirty: true });
-  // Переменная для таймера (добавьте её где-нибудь до handleSubmit, например, рядом с isSubmitted = ref(false))
-  let submitTimeout = null;
-  const handleSubmit = async () => {
-    isSubmitted.value = false;
-    const isValid = await v$.value.$validate();
+  // 3. ВЫЗЫВАЕМ ЭКШЕН ИЗ PINIA ПОЛЬЗУЯСЬ STORE
+  const result = await sendCallMeBack(payload);
 
-    if (!isValid) return;
-    const timeElapsed = Date.now() - startTime.value;
+  if (result.success) {
+    // Если отправка успешна
+    isSubmitted.value = true;
 
-    if (timeElapsed < 3000 || form.value.isConsent || trapValue.value !== "") {
-      console.log("Spam detected. Blocked silently.");
-      isSubmitted.value = true;
-      return;
-    }
+    // Очищаем форму
+    form.value.name = "";
+    form.value.email = "";
+    form.value.phone = "";
+    form.value.message = "";
+    form.value.isConsent = false;
+    v$.value.$reset();
 
-    const sentAt = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-
-    const payload = {
-      name: form.value.name,
-      email: form.value.email,
-      phone: form.value.phone,
-      message: form.value.message,
-      sentAt: sentAt,
-    };
-
-    // 3. ВЫЗЫВАЕМ ЭКШЕН ИЗ PINIA ПОЛЬЗУЯСЬ STORE
-    const result = await sendCallMeBack(payload);
-
-    if (result.success) {
-      // Если отправка успешна
-      isSubmitted.value = true;
-
-      // Очищаем форму
-      form.value.name = "";
-      form.value.email = "";
-      form.value.phone = "";
-      form.value.message = "";
-      form.value.isConsent = false;
-      v$.value.$reset();
-
-      if (submitTimeout) clearTimeout(submitTimeout);
-      submitTimeout = setTimeout(() => {
-        isSubmitted.value = false;
-      }, 5000);
-    } else {
-      // Тут можно обработать ошибку, например показать Toast-уведомление
-      console.error("Error send");
-    }
-  };
+    if (submitTimeout) clearTimeout(submitTimeout);
+    submitTimeout = setTimeout(() => {
+      isSubmitted.value = false;
+    }, 5000);
+  } else {
+    // Тут можно обработать ошибку, например показать Toast-уведомление
+    console.error("Error send");
+  }
+};
 </script>
 <template>
   <section class="relative md:pt-30 pb-20 md:pb-30 lg:pb-50">
-    <span class="absolute lg:-top-1/4 -top-30 left-auto">
+    <span class="absolute lg:-top-1/4 -top-30 left-auto -z-10">
       <img
         src="@/assets/webp/contacts-bg.webp"
         alt="contacts"
-        class="object-cover w-full h-full" />
+        class="object-cover w-full h-full"
+      />
     </span>
 
     <div class="relative lg:container lg:mx-auto px-4">
       <div class="relative grid grid-cols-2">
         <div
-          class="absolute -top-30 -left-[2%] w-60 h-60 flex items-center justify-center">
+          class="absolute -top-30 -left-[2%] w-60 h-60 flex items-center justify-center"
+        >
           <!-- Левый лист (начинает двигаться из левой части) -->
           <img
             src="@/assets/webp/leaf-1.webp"
             alt="six-leaf"
-            class="absolute -scale-x-100 z-10 left-0 top-10 w-16 h-16 object-contain rotate-45 animate-leaf-orbit" />
+            class="absolute -scale-x-100 z-10 left-0 top-10 w-16 h-16 object-contain rotate-45 animate-leaf-orbit"
+          />
 
           <!-- Рука по центру (над логотипом) -->
           <img
             src="@/assets/webp/logo-hand.webp"
             alt="six-hand"
-            class="hidden md:block absolute left-15 top-8.5 z-20 w-50 h-50 object-contain -mt-20" />
+            class="hidden md:block absolute left-15 top-8.5 z-20 w-50 h-50 object-contain -mt-20"
+          />
 
           <!-- Логотип по центру базы -->
           <PartLogo
             class="h-40 w-40 z-10 absolute -top-10 left-5 hidden md:flex"
             class1="h-40 w-40"
             class2="text-white! h-25 w-25"
-            class3="text-white! h-25 w-25" />
+            class3="text-white! h-25 w-25"
+          />
 
           <!-- Правый лист (начинает двигаться из правой части) -->
           <img
             src="@/assets/webp/leaf-5.webp"
             alt="six-leaf-5"
-            class="absolute z-10 -right-10 top-10 md:-top-10 w-24 h-24 object-contain animate-leaf-orbit-reverse" />
+            class="absolute z-10 -right-10 top-10 md:-top-10 w-24 h-24 object-contain animate-leaf-orbit-reverse"
+          />
         </div>
         <div
-          class="col-span-full lg:col-span-1 -mx-4 md:mx-0 py-7 px-5 rounded-t-4xl lg:rounded-r-none lg:rounded-l-4xl border-t-2 border-x-2 border-white bg-linear-to-r from-transparent to-white/90">
+          class="col-span-full lg:col-span-1 -mx-4 md:mx-0 py-7 px-5 rounded-t-4xl lg:rounded-r-none lg:rounded-l-4xl border-t-2 border-x-2 border-white bg-linear-to-r from-transparent to-white/90"
+        >
           <h3 class="text-4xl mb-7">Call me back</h3>
           <p class="text-lg mb-7 leading-5">
             Leave your contact details. <br />
@@ -181,16 +185,19 @@
           <form
             id="callMeBack"
             @submit.prevent="handleSubmit"
-            class="grid lg:grid-cols-3 grid-cols-1 gap-5 lg:gap-2.5 w-full">
+            class="grid lg:grid-cols-3 grid-cols-1 gap-5 lg:gap-2.5 w-full"
+          >
             <div
               class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
-              aria-hidden="true">
+              aria-hidden="true"
+            >
               <label for="consent">consent to data processing</label>
               <input
                 id="consent"
                 type="checkbox"
                 v-model="form.isConsent"
-                tabindex="-1" />
+                tabindex="-1"
+              />
               <label :for="trapFieldName">Leave empty</label>
               <input
                 :id="trapFieldName"
@@ -198,7 +205,8 @@
                 :name="trapFieldName"
                 v-model="trapValue"
                 tabindex="-1"
-                autocomplete="off" />
+                autocomplete="off"
+              />
             </div>
 
             <!-- Имя -->
@@ -215,10 +223,12 @@
                   v$.name.$error
                     ? 'border-red-500'
                     : 'border-zinc-200 focus:border-main'
-                " />
+                "
+              />
               <p
                 v-if="v$.name.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+              >
                 {{ v$.name.$errors[0].$message }}
               </p>
             </div>
@@ -237,10 +247,12 @@
                   v$.email.$error
                     ? 'border-red-500'
                     : 'border-zinc-200 focus:border-main'
-                " />
+                "
+              />
               <p
                 v-if="v$.email.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+              >
                 {{ v$.email.$errors[0].$message }}
               </p>
             </div>
@@ -260,10 +272,12 @@
                   v$.phone.$error
                     ? 'border-red-500'
                     : 'border-zinc-200 focus:border-main'
-                " />
+                "
+              />
               <p
                 v-if="v$.phone.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+              >
                 {{ v$.phone.$errors[0].$message }}
               </p>
             </div>
@@ -281,10 +295,12 @@
                   v$.message.$error
                     ? 'border-red-500'
                     : 'border-zinc-200 focus:border-main'
-                "></textarea>
+                "
+              ></textarea>
               <p
                 v-if="v$.message.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+              >
                 {{ v$.message.$errors[0].$message }}
               </p>
             </div>
@@ -295,7 +311,8 @@
               main
               :disabled="v$.$invalid"
               class="col-span-full w-full text-lg font-black uppercase transition-colors py-4! rounded-2xl shadow-lg mt-2"
-              :class="{ 'opacity-50 bg-zinc-400!': v$.$error }">
+              :class="{ 'opacity-50 bg-zinc-400!': v$.$error }"
+            >
               Send
             </UIBtn>
 
@@ -306,10 +323,12 @@
               enter-to-class="opacity-100"
               leave-active-class="transition-opacity duration-500"
               leave-from-class="opacity-100"
-              leave-to-class="opacity-0">
+              leave-to-class="opacity-0"
+            >
               <div
                 v-if="isSubmitted"
-                class="text-center p-3 rounded-xl bg-green-50 mt-2 absolute -bottom-10 left-auto">
+                class="text-center p-3 rounded-xl bg-green-50 mt-2 absolute -bottom-10 left-auto"
+              >
                 <p class="text-green-700 font-semibold text-sm">
                   Thank you! Your message has been sent successfully.
                 </p>
@@ -318,12 +337,14 @@
           </form>
         </div>
         <div
-          class="relative col-span-full lg:col-span-1 bg-main-darkser/80 px-7 py-5 text-smoke rounded-b-4xl lg:rounded-l-none lg:rounded-r-4xl overflow-hidden">
+          class="relative col-span-full lg:col-span-1 bg-main-darkser/80 px-7 py-5 text-smoke rounded-b-4xl lg:rounded-l-none lg:rounded-r-4xl overflow-hidden"
+        >
           <PartLogo
             class="w-65 h-65 -z-10 absolute! -right-1/6 top-1/6 -rotate-30"
             class1="hidden!"
             class2="text-smoke-dark! w-60 h-60"
-            class3="text-smoke-dark! w-60 h-60" />
+            class3="text-smoke-dark! w-60 h-60"
+          />
           <h2 class="mb-7 text-3xl">Contacts</h2>
           <p class="mb-4 text-lg">Contact us in any convenient way</p>
           <p class="mb-8 text-lg">
@@ -332,18 +353,10 @@
           </p>
           <ul class="gap-2 flex flex-col text-3xl font-semibold mb-20">
             <li>
-              <a
-                href="tel:+306977795840"
-                target="_blank"
-                >+306977795840</a
-              >
+              <a href="tel:+306977795840" target="_blank">+306977795840</a>
             </li>
             <li>
-              <a
-                href="tel:+302394309999"
-                target="_blank"
-                >+302394309999</a
-              >
+              <a href="tel:+302394309999" target="_blank">+302394309999</a>
             </li>
           </ul>
           <div class="flex gap-4">
@@ -352,39 +365,34 @@
               target="_blank"
               rel="noopener"
               aria-label="Facebook"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_FACEBOOK"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_FACEBOOK" class="text-smoke w-8 h-8" />
             </a>
             <a
               href="viber://chat?number=%2B306977795840"
               aria-label="Viber"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_VIBER"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_VIBER" class="text-smoke w-8 h-8" />
             </a>
             <a
               href="https://wa.me/306977795840"
               target="_blank"
               rel="noopener"
               aria-label="WhatsApp"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_WHATSAPP"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_WHATSAPP" class="text-smoke w-8 h-8" />
             </a>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="w-full h-full overflow-hidden left-auto -mt-20 -mb-20 lg:-mb-50 -z-10 relative">
-      <img
-        src="/map.jpg"
-        alt="map"
-        class="h-142.5 w-full object-cover" />
+      class="w-full h-full overflow-hidden left-auto -mt-20 -mb-20 lg:-mb-50 -z-10 relative"
+    >
+      <img src="/map.jpg" alt="map" class="h-142.5 w-full object-cover" />
     </div>
   </section>
 </template>

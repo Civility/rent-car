@@ -1,59 +1,127 @@
 export interface CarFilters {
   sortBy?: string;
-  transmission?: string; // 'A', 'M', или 'both'
-  vehicleType?: string; // 'car', 'vans', 'premium' (согласно вашему дизайну)
-  minSeats?: number; // 2, 4, 5, 7
+  transmission?: string;
+  vehicleType?: string;
+  minSeats?: number;
   minPrice?: number | null;
   maxPrice?: number | null;
 }
 
-export function applyFilters(cars: any[], filters: CarFilters = {}) {
+export interface CarCategory {
+  id: number;
+  name: string;
+}
+
+export interface CarType {
+  id: number;
+  name: string;
+}
+
+export interface CarPrice {
+  priceDay: number;
+  excess: number;
+  deposit: number;
+  discount: number;
+}
+
+export interface CarFeatures {
+  year: number | null;
+  seats: number;
+  doors: number;
+  bags: number;
+  ac: boolean;
+  age: number;
+  transmission: string;
+  fuel: string | null;
+  horsepower: number | null;
+  body: string | null;
+  driveType: string | null;
+  engineCapacity: string | number | null;
+}
+
+export interface FilterableCar {
+  id: number;
+  name: string;
+  category: CarCategory;
+  type: CarType;
+  img: string | null;
+  images: string[];
+  price: CarPrice;
+  features: CarFeatures;
+  totalPrice?: number;
+}
+
+// Приводим тип машины к значениям, которые уже ожидает фронт.
+const getVehicleTypeValue = (car: FilterableCar): string => {
+  const typeName = car.type?.name?.toLowerCase() || "";
+
+  if (typeName.includes("premium")) {
+    return "premium";
+  }
+
+  if (typeName.includes("van") || typeName.includes("truck")) {
+    return "vans";
+  }
+
+  return "car";
+};
+
+// Берём цену за день из новой вложенной структуры.
+const getPricePerDay = (car: FilterableCar): number => {
+  return Number(car.price?.priceDay ?? 0);
+};
+
+export function applyFilters(
+  cars: FilterableCar[],
+  filters: CarFilters = {},
+): FilterableCar[] {
   let result = [...cars];
 
-  // --- ФИЛЬТРАЦИЯ ---
-
-  // 1. Трансмиссия
+  // 1. Фильтр по трансмиссии.
   if (filters.transmission && filters.transmission !== "both") {
     result = result.filter(
       (car) => car.features.transmission === filters.transmission,
     );
   }
 
-  // 2. Тип автомобиля (Vehicle type)
+  // 2. Фильтр по типу машины.
   if (filters.vehicleType) {
-    result = result.filter((car) => car.type === filters.vehicleType);
+    result = result.filter(
+      (car) => getVehicleTypeValue(car) === filters.vehicleType,
+    );
   }
 
-  // 3. Количество мест (Seats)
-  const minSeats = filters.minSeats;
-  if (minSeats !== undefined) {
-    result = result.filter((car) => car.features.passengers >= minSeats);
+  // 3. Фильтр по количеству мест.
+  if (filters.minSeats !== undefined) {
+    result = result.filter((car) => car.features.seats >= filters.minSeats!);
   }
 
-  const minPrice = filters.minPrice;
-  if (typeof minPrice === "number") {
-    result = result.filter((car) => car.totalPrice >= minPrice);
+  // 4. Фильтр по минимальной итоговой цене.
+  if (typeof filters.minPrice === "number") {
+    result = result.filter(
+      (car) => Number(car.totalPrice ?? 0) >= filters.minPrice!,
+    );
   }
 
-  // 5. Максимальная цена (Ищем по TOTAL)
-  const maxPrice = filters.maxPrice;
-  if (typeof maxPrice === "number") {
-    result = result.filter((car) => car.totalPrice <= maxPrice);
+  // 5. Фильтр по максимальной итоговой цене.
+  if (typeof filters.maxPrice === "number") {
+    result = result.filter(
+      (car) => Number(car.totalPrice ?? 0) <= filters.maxPrice!,
+    );
   }
 
-  // --- СОРТИРОВКА ---
-  const sortBy = filters.sortBy || "recommended";
-
-  switch (sortBy) {
+  // 6. Сортировка.
+  switch (filters.sortBy || "recommended") {
     case "price_asc":
-      result.sort((a, b) => a.priceDay - b.priceDay);
+      result.sort((a, b) => getPricePerDay(a) - getPricePerDay(b));
       break;
+
     case "price_desc":
-      result.sort((a, b) => b.priceDay - a.priceDay);
+      result.sort((a, b) => getPricePerDay(b) - getPricePerDay(a));
       break;
+
     case "recommended":
     default:
-      // В моках сортируем по ID. На реальном проекте - по popularity или полям от бэка
       result.sort((a, b) => a.id - b.id);
       break;
   }

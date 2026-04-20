@@ -31,10 +31,19 @@ import { useBookingStore } from "@/store/booking";
 import { navigateTo } from "#app";
 const { isDesktop } = useDevice();
 // const {   } = useMainStore();
-const { setSearchForm } = useBookingStore();
-// const { lang } = storeToRefs(useMainStore());
-const { searchForm } = storeToRefs(useBookingStore());
+// const { locations } = storeToRefs(useMainStore());
+const { setSearchForm, setLocation, setReturnLocation, setDifferentLocation } =
+  useBookingStore();
+const { searchForm, locations } = storeToRefs(useBookingStore());
 
+onMounted(() => {
+  startTime.value = Date.now();
+  const prefixes = ["website", "company", "url", "fax"];
+  trapFieldName.value =
+    prefixes[Math.floor(Math.random() * prefixes.length)] +
+    "_" +
+    Math.random().toString(36).slice(2, 6);
+});
 // slider
 const slider = [
   "intro-photo-1",
@@ -47,25 +56,21 @@ const slider = [
   "intro-photo-8",
 ];
 // select
-const locationOptions = [
-  { value: "SKG", label: "THESSALONIKI AIRPORT SKG" },
-  { value: "ATH", label: "ATHENS AIRPORT ATH" },
-  { value: "LAG", label: "LAGADAS THESSALONIKI" },
-];
+// const locationOptions = [
+//   { value: "SKG", label: "THESSALONIKI AIRPORT SKG" },
+//   { value: "ATH", label: "ATHENS AIRPORT ATH" },
+//   { value: "LAG", label: "LAGADAS THESSALONIKI" },
+// ];
+// const locationOptions = locations.value.map((i) => ({
+//   value: i.value,
+//   label: i.label,
+// }));
+// const locationOptions = computed(() => locations.value);
 // Ловушки на спам
 const startTime = ref(0);
 const trapFieldName = ref("website_url");
 const trapValue = ref("");
 const isConsent = ref(false); // Локальный чекбокс-ловушка
-
-onMounted(() => {
-  startTime.value = Date.now();
-  const prefixes = ["website", "company", "url", "fax"];
-  trapFieldName.value =
-    prefixes[Math.floor(Math.random() * prefixes.length)] +
-    "_" +
-    Math.random().toString(36).substr(2, 4);
-});
 
 const form = computed(() => searchForm.value);
 
@@ -331,11 +336,12 @@ const handleSubmit = async () => {
                 >
                   <UISelect
                     id="location"
-                    v-model="form.location"
+                    :model-value="form.location"
                     name="location"
                     aria-labelledby="label-location"
-                    :options="locationOptions"
+                    :options="locations"
                     placeholder="Select location"
+                    @update:model-value="setLocation"
                   />
                 </div>
               </div>
@@ -354,10 +360,11 @@ const handleSubmit = async () => {
             >
               <input
                 id="differentLocation"
-                v-model="form.differentLocation"
+                :checked="form.differentLocation"
                 name="differentLocation"
                 type="checkbox"
                 class="checkbox-rounded"
+                @change="setDifferentLocation($event.target.checked)"
               />
 
               <span class="text-zinc-800 font-semibold"
@@ -388,10 +395,11 @@ const handleSubmit = async () => {
                   >
                     <UISelect
                       id="returnLocation"
-                      v-model="form.returnLocation"
+                      :model-value="form.returnLocation"
                       name="returnLocation"
-                      :options="locationOptions"
+                      :options="locations"
                       placeholder="Select return location"
+                      @update:model-value="setReturnLocation"
                     />
                   </div>
                 </div>

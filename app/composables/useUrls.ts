@@ -10,9 +10,6 @@ export const getApiUrl = (path: string) => {
 export const getImageUrl = (path: string | null) => {
   const config = useRuntimeConfig();
   const imageBase = config.public.imageBase;
-
-  if (!path) return "/car-placeholder.png";
-
   return `${imageBase}${path}`;
 };
 export const IMG = (name: string) =>

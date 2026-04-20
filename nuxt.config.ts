@@ -1,11 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-
 import tailwindcss from "@tailwindcss/vite";
+const siteURL = "https://winter.local";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   future: { compatibilityVersion: 4 },
-  experimental: { payloadExtraction: true },
+  experimental: { payloadExtraction: false },
   ssr: true,
   nitro: {
     static: true,
@@ -41,14 +41,14 @@ export default defineNuxtConfig({
   css: ["./app/assets/main.css"],
   routeRules: {
     "/": { prerender: true }, // статика
-    "/about": { prerender: true }, // статика
+    "/order": { ssr: true }, // SSR на каждый запрос
     "/booking": { ssr: true }, // SSR на каждый запрос
-    "/api/**": { proxy: "https://wintercms.local/api/**" },
+    "/api/**": { proxy: `${siteURL}/api/**` },
   },
   runtimeConfig: {
     public: {
-      API: "https://wintercms.local",
-      IMG: "https://wintercms.local/storage/app/uploads/public/",
+      apiBase: `${siteURL}`,
+      imageBase: `${siteURL}/storage/app/media/`,
     },
   },
   app: {
