@@ -1,6 +1,6 @@
 <script setup>
 import { useVuelidate } from "@vuelidate/core";
-// import { storeToRefs } from "pinia";
+import { storeToRefs } from "pinia";
 import { useMainStore } from "@/store/main";
 import ICON_VIBER from "@/assets/icons/viber.svg";
 import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
@@ -13,21 +13,15 @@ import {
   helpers,
 } from "@vuelidate/validators";
 import { vMaska } from "maska/vue";
-import { format } from "date-fns";
 
 const { sendCallMeBack } = useMainStore();
-// const {  } = storeToRefs(useAuthStore())
+const { lang } = storeToRefs(useMainStore());
+
 const startTime = ref(0);
-const trapFieldName = ref("website_url");
+
 const trapValue = ref("");
 onMounted(() => {
   startTime.value = Date.now();
-  // Генерируем случайное имя ловушки (например: website_7a3b, company_9f1c)
-  const prefixes = ["website", "company", "url", "fax"];
-  trapFieldName.value =
-    prefixes[Math.floor(Math.random() * prefixes.length)] +
-    "_" +
-    Math.random().toString(36).substr(2, 4);
 });
 const form = ref({
   name: "",
@@ -37,7 +31,7 @@ const form = ref({
   isConsent: false,
 });
 const noLinksOrHtml = helpers.regex(/^(?!.*(<[^>]+>|https?:\/\/|www\.)).*/i);
-const isSubmitted = ref(false);
+const isSuccessModalOpen = ref(false);
 const lettersOnly = helpers.regex(/^[\p{L}\s\-']+$/u);
 const minTwoWords = (value) => {
   if (!value) return false;
@@ -80,54 +74,54 @@ const rules = {
 };
 
 const v$ = useVuelidate(rules, form, { $autoDirty: true });
-// Переменная для таймера (добавьте её где-нибудь до handleSubmit, например, рядом с isSubmitted = ref(false))
-let submitTimeout = null;
+const errorMessage = ref("");
+const resetForm = () => {
+  form.value.name = "";
+  form.value.email = "";
+  form.value.phone = "";
+  form.value.message = "";
+  form.value.isConsent = false;
+  trapValue.value = "";
+  v$.value.$reset();
+};
+
 const handleSubmit = async () => {
-  isSubmitted.value = false;
+  errorMessage.value = "";
+
   const isValid = await v$.value.$validate();
-
   if (!isValid) return;
-  const timeElapsed = Date.now() - startTime.value;
 
+  const timeElapsed = Date.now() - startTime.value;
   if (timeElapsed < 3000 || form.value.isConsent || trapValue.value !== "") {
     console.log("Spam detected. Blocked silently.");
-    isSubmitted.value = true;
+    isSuccessModalOpen.value = true;
+    resetForm();
     return;
   }
-
-  const sentAt = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
   const payload = {
     name: form.value.name,
     email: form.value.email,
     phone: form.value.phone,
     message: form.value.message,
-    sentAt: sentAt,
+    locale: lang.value,
+    started_at: startTime.value,
+    is_consent: form.value.isConsent,
+    website_url: trapValue.value,
   };
 
-  // 3. ВЫЗЫВАЕМ ЭКШЕН ИЗ PINIA ПОЛЬЗУЯСЬ STORE
   const result = await sendCallMeBack(payload);
 
   if (result.success) {
-    // Если отправка успешна
-    isSubmitted.value = true;
-
-    // Очищаем форму
-    form.value.name = "";
-    form.value.email = "";
-    form.value.phone = "";
-    form.value.message = "";
-    form.value.isConsent = false;
-    v$.value.$reset();
-
-    if (submitTimeout) clearTimeout(submitTimeout);
-    submitTimeout = setTimeout(() => {
-      isSubmitted.value = false;
-    }, 5000);
+    isSuccessModalOpen.value = true;
+    resetForm();
   } else {
-    // Тут можно обработать ошибку, например показать Toast-уведомление
-    console.error("Error send");
+    errorMessage.value =
+      result.error || "Failed to send your request. Please try again.";
   }
+};
+const handleSuccessModalClose = () => {
+  isSuccessModalOpen.value = false;
 };
 </script>
 <template>
@@ -182,159 +176,148 @@ const handleSubmit = async () => {
             Leave your contact details. <br />
             Our managers will contact you shortly.
           </p>
-          <form
-            id="callMeBack"
-            @submit.prevent="handleSubmit"
-            class="grid lg:grid-cols-3 grid-cols-1 gap-5 lg:gap-2.5 w-full"
-          >
-            <div
-              class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
-              aria-hidden="true"
-            >
-              <label for="consent">consent to data processing</label>
-              <input
-                id="consent"
-                type="checkbox"
-                v-model="form.isConsent"
-                tabindex="-1"
-              />
-              <label :for="trapFieldName">Leave empty</label>
-              <input
-                :id="trapFieldName"
-                type="text"
-                :name="trapFieldName"
-                v-model="trapValue"
-                tabindex="-1"
-                autocomplete="off"
-              />
-            </div>
-
-            <!-- Имя -->
-            <div class="relative">
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autocomplete="name"
-                v-model="form.name"
-                placeholder="Name"
-                class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
-                :class="
-                  v$.name.$error
-                    ? 'border-red-500'
-                    : 'border-zinc-200 focus:border-main'
-                "
-              />
-              <p
-                v-if="v$.name.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
-              >
-                {{ v$.name.$errors[0].$message }}
-              </p>
-            </div>
-
-            <!-- Email -->
-            <div class="relative">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                v-model="form.email"
-                placeholder="Email address"
-                class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
-                :class="
-                  v$.email.$error
-                    ? 'border-red-500'
-                    : 'border-zinc-200 focus:border-main'
-                "
-              />
-              <p
-                v-if="v$.email.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
-              >
-                {{ v$.email.$errors[0].$message }}
-              </p>
-            </div>
-
-            <!-- Телефон (с v-maska) -->
-            <div class="relative">
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                autocomplete="tel"
-                v-model="form.phone"
-                v-maska="'+## (###) ###-####'"
-                placeholder="Phone number"
-                class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
-                :class="
-                  v$.phone.$error
-                    ? 'border-red-500'
-                    : 'border-zinc-200 focus:border-main'
-                "
-              />
-              <p
-                v-if="v$.phone.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
-              >
-                {{ v$.phone.$errors[0].$message }}
-              </p>
-            </div>
-
-            <!-- Сообщение -->
-            <div class="relative col-span-full">
-              <textarea
-                id="message"
-                name="message"
-                v-model="form.message"
-                placeholder="Your message"
-                rows="4"
-                class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors resize-none"
-                :class="
-                  v$.message.$error
-                    ? 'border-red-500'
-                    : 'border-zinc-200 focus:border-main'
-                "
-              ></textarea>
-              <p
-                v-if="v$.message.$error"
-                class="text-red-500 text-xs mt-1.5 px-2 font-medium"
-              >
-                {{ v$.message.$errors[0].$message }}
-              </p>
-            </div>
-
-            <!-- Кнопка -->
-            <UIBtn
-              type="submit"
-              main
-              :disabled="v$.$invalid"
-              class="col-span-full w-full text-lg font-black uppercase transition-colors py-4! rounded-2xl shadow-lg mt-2"
-              :class="{ 'opacity-50 bg-zinc-400!': v$.$error }"
-            >
-              Send
-            </UIBtn>
-
-            <!-- Уведомление об успешной (или фейковой) отправке -->
-            <transition
-              enter-active-class="transition-opacity duration-500"
-              enter-from-class="opacity-0"
-              enter-to-class="opacity-100"
-              leave-active-class="transition-opacity duration-500"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
+          <ClientOnly>
+            <form
+              id="callMeBack"
+              class="grid lg:grid-cols-3 grid-cols-1 gap-5 lg:gap-2.5 w-full"
+              @submit.prevent="handleSubmit"
             >
               <div
-                v-if="isSubmitted"
-                class="text-center p-3 rounded-xl bg-green-50 mt-2 absolute -bottom-10 left-auto"
+                class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
+                aria-hidden="true"
               >
-                <p class="text-green-700 font-semibold text-sm">
-                  Thank you! Your message has been sent successfully.
+                <label for="consent">consent to data processing</label>
+                <input
+                  id="consent"
+                  v-model="form.isConsent"
+                  type="checkbox"
+                  tabindex="-1"
+                />
+                <label for="website_url">Leave empty</label>
+                <input
+                  id="website_url"
+                  v-model="trapValue"
+                  type="text"
+                  name="website_url"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Имя -->
+              <div class="relative">
+                <input
+                  id="name"
+                  v-model="form.name"
+                  name="name"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="Name"
+                  class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
+                  :class="
+                    v$.name.$error
+                      ? 'border-red-500'
+                      : 'border-zinc-200 focus:border-main'
+                  "
+                />
+                <p
+                  v-if="v$.name.$error"
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
+                  {{ v$.name.$errors[0].$message }}
                 </p>
               </div>
-            </transition>
-          </form>
+
+              <!-- Email -->
+              <div class="relative">
+                <input
+                  id="email"
+                  v-model="form.email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  placeholder="Email address"
+                  class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
+                  :class="
+                    v$.email.$error
+                      ? 'border-red-500'
+                      : 'border-zinc-200 focus:border-main'
+                  "
+                />
+                <p
+                  v-if="v$.email.$error"
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
+                  {{ v$.email.$errors[0].$message }}
+                </p>
+              </div>
+
+              <!-- Телефон (с v-maska) -->
+              <div class="relative">
+                <input
+                  id="phone"
+                  v-model="form.phone"
+                  v-maska="'+## (###) ###-####'"
+                  name="phone"
+                  type="tel"
+                  autocomplete="tel"
+                  placeholder="Phone number"
+                  class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors"
+                  :class="
+                    v$.phone.$error
+                      ? 'border-red-500'
+                      : 'border-zinc-200 focus:border-main'
+                  "
+                />
+                <p
+                  v-if="v$.phone.$error"
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
+                  {{ v$.phone.$errors[0].$message }}
+                </p>
+              </div>
+
+              <!-- Сообщение -->
+              <div class="relative col-span-full">
+                <textarea
+                  id="message"
+                  v-model="form.message"
+                  name="message"
+                  placeholder="Your message"
+                  rows="4"
+                  class="w-full px-5 py-4 rounded-2xl border bg-zinc-100 focus:bg-white focus:outline-none transition-colors resize-none"
+                  :class="
+                    v$.message.$error
+                      ? 'border-red-500'
+                      : 'border-zinc-200 focus:border-main'
+                  "
+                />
+                <p
+                  v-if="v$.message.$error"
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
+                  {{ v$.message.$errors[0].$message }}
+                </p>
+              </div>
+
+              <!-- Кнопка -->
+              <UIBtn
+                type="submit"
+                main
+                :disabled="v$.$invalid"
+                class="col-span-full w-full text-lg font-black uppercase transition-colors py-4! rounded-2xl shadow-lg mt-2"
+                :class="{ 'opacity-50 bg-zinc-400!': v$.$error }"
+              >
+                Send
+              </UIBtn>
+              <p
+                v-if="errorMessage"
+                class="col-span-full text-red-600 text-sm font-semibold text-center"
+              >
+                {{ errorMessage }}
+              </p>
+            </form>
+          </ClientOnly>
         </div>
         <div
           class="relative col-span-full lg:col-span-1 bg-main-darkser/80 px-7 py-5 text-smoke rounded-b-4xl lg:rounded-l-none lg:rounded-r-4xl overflow-hidden"
@@ -394,5 +377,16 @@ const handleSubmit = async () => {
     >
       <img src="/map.jpg" alt="map" class="h-142.5 w-full object-cover" />
     </div>
+    <UIModal
+      v-model="isSuccessModalOpen"
+      type="success"
+      title="Your message has been sent successfully."
+      @close="handleSuccessModalClose"
+      @confirm="handleSuccessModalClose"
+    >
+      <template #note>
+        Thank you! Our managers will contact you shortly.
+      </template>
+    </UIModal>
   </section>
 </template>

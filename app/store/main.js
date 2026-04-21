@@ -1,10 +1,13 @@
 import { defineStore } from "pinia";
-// import { useBookingStore } from "./booking.js";
+import { getApiUrl } from "@/composables/useUrls";
+
 export const useMainStore = defineStore("main", {
   state: () => ({
     isLoading: false,
+    callbackError: null,
     lang: "ru", // el, de, en
   }),
+
   actions: {
     setLoading(status) {
       this.isLoading = status;
@@ -14,21 +17,30 @@ export const useMainStore = defineStore("main", {
       this.lang = newLang;
     },
 
-    // Экшен для отправки формы обратной связи
     async sendCallMeBack(payload) {
       this.setLoading(true);
+      this.callbackError = null;
+
+      const FRIENDLY_ERROR =
+        "Something went wrong. Please try again later or call us at +30 697 779 5840.";
 
       try {
-        console.log("Отправка данных формы на сервер...", payload);
+        const response = await $fetch(getApiUrl("/api/callbacks"), {
+          method: "POST",
+          body: payload,
+        });
 
-        // Имитация задержки сети (убрать при реальном API)
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (!response?.success) {
+          this.callbackError = FRIENDLY_ERROR;
+          return { success: false, error: this.callbackError };
+        }
 
-        // Возвращаем флаг успешности
-        return { success: true };
+        return { success: true, data: response.data };
       } catch (error) {
-        console.error("Ошибка при отправке формы:", error);
-        return { success: false, error };
+        console.error("Callback submission failed:", error);
+
+        this.callbackError = FRIENDLY_ERROR;
+        return { success: false, error: this.callbackError };
       } finally {
         this.setLoading(false);
       }

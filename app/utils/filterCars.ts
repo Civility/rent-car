@@ -1,3 +1,5 @@
+import { useCarPricing } from "@/composables/useCarPricing";
+
 export interface CarFilters {
   sortBy?: string;
   transmission?: string;
@@ -51,24 +53,15 @@ export interface FilterableCar {
   totalPrice?: number;
 }
 
+const { getDiscountAmount, getFinalPricePerDay } = useCarPricing();
+
 // Приводим тип машины к значениям, которые уже ожидает фронт.
 const getVehicleTypeValue = (car: FilterableCar): string => {
   const typeName = car.type?.name?.toLowerCase() || "";
 
-  if (typeName.includes("premium")) {
-    return "premium";
-  }
-
-  if (typeName.includes("van") || typeName.includes("truck")) {
-    return "vans";
-  }
-
+  if (typeName.includes("premium")) return "premium";
+  if (typeName.includes("van") || typeName.includes("truck")) return "vans";
   return "car";
-};
-
-// Берём цену за день из новой вложенной структуры.
-const getPricePerDay = (car: FilterableCar): number => {
-  return Number(car.price?.priceDay ?? 0);
 };
 
 export function applyFilters(
@@ -77,78 +70,58 @@ export function applyFilters(
 ): FilterableCar[] {
   let result = [...cars];
 
-  // 1. Фильтр по трансмиссии.
+  // 1. Трансмиссия
   if (filters.transmission && filters.transmission !== "both") {
     result = result.filter(
       (car) => car.features.transmission === filters.transmission,
     );
   }
 
-  // 2. Фильтр по типу машины.
+  // 2. Тип машины
   if (filters.vehicleType) {
     result = result.filter(
       (car) => getVehicleTypeValue(car) === filters.vehicleType,
     );
   }
 
-  // 3. Фильтр по количеству мест.
+  // 3. Кол-во мест
   if (filters.minSeats !== undefined) {
     result = result.filter((car) => car.features.seats >= filters.minSeats!);
   }
 
-  // 4. Фильтр по минимальной итоговой цене.
+  // 4. Мин. итоговая цена
   if (typeof filters.minPrice === "number") {
     result = result.filter(
       (car) => Number(car.totalPrice ?? 0) >= filters.minPrice!,
     );
   }
 
-  // 5. Фильтр по максимальной итоговой цене.
+  // 5. Макс. итоговая цена
   if (typeof filters.maxPrice === "number") {
     result = result.filter(
       (car) => Number(car.totalPrice ?? 0) <= filters.maxPrice!,
     );
   }
 
-  // 6. Сортировка.
-
-  const getDiscountAmount = (car: FilterableCar): number => {
-    return Number(car.price?.discount ?? 0);
+  // 6. Сортировка
+  const byBestDeals = (a: FilterableCar, b: FilterableCar) => {
+    const discountDiff = getDiscountAmount(b) - getDiscountAmount(a);
+    if (discountDiff !== 0) return discountDiff;
+    return getFinalPricePerDay(a) - getFinalPricePerDay(b);
   };
 
-  const getFinalPricePerDay = (car: FilterableCar): number => {
-    return Math.max(getPricePerDay(car) - getDiscountAmount(car), 0);
-  };
   switch (filters.sortBy || "recommended") {
     case "discount":
-      result.sort((a, b) => {
-        const discountDiff = getDiscountAmount(b) - getDiscountAmount(a);
-
-        if (discountDiff !== 0) {
-          return discountDiff;
-        }
-
-        return getFinalPricePerDay(a) - getFinalPricePerDay(b);
-      });
+    case "recommended":
+      result.sort(byBestDeals);
       break;
+
     case "price_asc":
       result.sort((a, b) => getFinalPricePerDay(a) - getFinalPricePerDay(b));
       break;
 
     case "price_desc":
       result.sort((a, b) => getFinalPricePerDay(b) - getFinalPricePerDay(a));
-      break;
-
-    case "recommended":
-      result.sort((a, b) => {
-        const discountDiff = getDiscountAmount(b) - getDiscountAmount(a);
-
-        if (discountDiff !== 0) {
-          return discountDiff;
-        }
-
-        return getFinalPricePerDay(a) - getFinalPricePerDay(b);
-      });
       break;
 
     default:

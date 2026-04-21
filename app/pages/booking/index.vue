@@ -9,10 +9,17 @@ import { storeToRefs } from "pinia";
 import { useBookingStore } from "@/store/booking";
 import { useRouter } from "vue-router";
 
-const { setSearchForm, fetchCars } = useBookingStore();
-const { searchForm, cars } = storeToRefs(useBookingStore());
 const router = useRouter();
+const bookingStore = useBookingStore();
+const { setSearchForm, fetchCars } = bookingStore;
+const { searchForm, cars } = storeToRefs(bookingStore);
 
+// --- Composables ---
+const { getCarPricing } = useCarPricing();
+const { useRentalDays } = useBookingDates();
+const rentalDays = useRentalDays(searchForm);
+
+// --- Guard + загрузка машин ---
 onMounted(async () => {
   if (searchForm.value.dateFrom === null || searchForm.value.dateTo === null) {
     router.push("/");
@@ -27,6 +34,7 @@ const handleSelectCar = (car) => {
   router.push("/booking/order");
 };
 
+// --- Опции для UI ---
 const sortOptions = [
   { label: "Best deals", value: "discount" },
   { label: "Lower price", value: "price_asc" },
@@ -52,6 +60,7 @@ const typeOptions = [
   { label: "Premium", value: "premium" },
 ];
 
+// --- Слайдер карточки / fullscreen ---
 const activeSliderId = ref(null);
 const fullscreenCar = ref(null);
 const fullscreenStartIndex = ref(0);
@@ -80,6 +89,7 @@ onBeforeUnmount(() => {
   document.body.style.overflow = "";
 });
 
+// --- Фильтры ---
 const seatMinMap = [2, 4, 5, 7];
 
 const getDefaultSeatIndex = () => {
@@ -116,25 +126,6 @@ const seatsProgress = computed(
   () => `${(Number(filters.seats) || 0) * 33.33}%`,
 );
 
-const { calculateTotal } = usePriceCalculator();
-const rentalDays = computed(() => {
-  if (!searchForm.value.dateFrom || !searchForm.value.dateTo) {
-    return 1;
-  }
-
-  const start = new Date(searchForm.value.dateFrom);
-  const end = new Date(searchForm.value.dateTo);
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return 1;
-  }
-
-  const diffMs = end.getTime() - start.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-  return diffDays > 0 ? diffDays : 1;
-});
-
 const currentFilters = computed(() => {
   const seatIndex = Number(filters.seats) || 0;
   const minSeats = seatMinMap[seatIndex] ?? seatMinMap[0];
@@ -148,41 +139,20 @@ const currentFilters = computed(() => {
     maxPrice: filters.maxPrice,
   };
 });
-const formatPrice = (value) => Number(value ?? 0).toFixed(2);
 
-const getBasePricePerDay = (car) => {
-  return Number(car.price?.priceDay ?? 0);
-};
-
-const getDiscountAmount = (car) => {
-  return Number(car.price?.discount ?? 0);
-};
-
-const getFinalPricePerDay = (car) => {
-  return Math.max(getBasePricePerDay(car) - getDiscountAmount(car), 0);
-};
-
-const hasDiscount = (car) => {
-  return (
-    getDiscountAmount(car) > 0 &&
-    getFinalPricePerDay(car) < getBasePricePerDay(car)
-  );
-};
-const carsWithTotal = computed(() => {
-  return cars.value.map((car) => {
-    const basePriceDay = getBasePricePerDay(car);
-    const finalPriceDay = getFinalPricePerDay(car);
-
+// --- Машины с рассчитанной ценой ---
+const carsWithTotal = computed(() =>
+  cars.value.map((car) => {
+    const pricing = getCarPricing(car, rentalDays.value);
     return {
       ...car,
-      basePriceDay,
-      finalPriceDay,
-      hasDiscount: hasDiscount(car),
-      totalPrice: Number(calculateTotal(finalPriceDay, rentalDays.value)),
-      // oldTotalPrice: Number(calculateTotal(basePriceDay, rentalDays.value)),
+      basePriceDay: pricing.basePriceDay,
+      finalPriceDay: pricing.finalPriceDay,
+      hasDiscount: pricing.hasDiscount,
+      totalPrice: pricing.totalPrice,
     };
-  });
-});
+  }),
+);
 
 const pricePlaceholders = computed(() => {
   const filtersForPlaceholders = {
@@ -207,9 +177,9 @@ const pricePlaceholders = computed(() => {
   };
 });
 
-const filteredCars = computed(() => {
-  return applyFilters(carsWithTotal.value, currentFilters.value);
-});
+const filteredCars = computed(() =>
+  applyFilters(carsWithTotal.value, currentFilters.value),
+);
 
 const resetFilters = () => {
   Object.assign(filters, createDefaultFilters());
@@ -218,7 +188,7 @@ const resetFilters = () => {
 
 <template>
   <main class="lg:container lg:mx-auto py-8">
-    <!-- ПАНЕЛЬ ФИЛЬТРОВ -->
+    <!-- ПАНЕЛЬ ФИЛЬТРОВ (mobile toggle) -->
     <div class="flex lg:hidden justify-end mb-4 px-4">
       <UIBtn
         class="border-2! border-sec! text-sec! transition-colors active:bg-sec/70 px-2"
@@ -243,10 +213,10 @@ const resetFilters = () => {
     </div>
 
     <div class="flex flex-col lg:flex-row gap-8 px-4 lg:px-0">
-      <!-- САЙДБАР С ФИЛЬТРАМИ  -->
+      <!-- САЙДБАР С ФИЛЬТРАМИ -->
       <aside
         :class="[
-          'flex lg:flex-col flex-row  md:items-start lg:items-stretch justify-start flex-wrap lg:w-75 w-full gap-8 lg:shrink-0 lg:border border-gray-200 rounded-lg lg:p-6 lg:h-fit sticky lg:top-24 bg-white transition-all duration-500 overflow-hidden',
+          'flex lg:flex-col flex-row md:items-start lg:items-stretch justify-start flex-wrap lg:w-75 w-full gap-8 lg:shrink-0 lg:border border-gray-200 rounded-lg lg:p-6 lg:h-fit sticky lg:top-24 bg-white transition-all duration-500 overflow-hidden',
           isFiltersOpen
             ? 'max-h-375 opacity-100 p-6 border mb-8 lg:mb-0'
             : 'max-h-0 opacity-0 p-0 border-0 lg:max-h-none lg:opacity-100 lg:p-6 lg:border',
@@ -266,7 +236,6 @@ const resetFilters = () => {
         </div>
 
         <!-- Filter: Transmission -->
-        <!-- <div class="mb-8 md:mb-0">-->
         <div class="w-1/2 md:w-1/3 lg:w-auto order-1">
           <h3 class="font-bold mb-4">Transmission</h3>
           <div class="flex flex-col gap-3 text-gray-700 text-sm">
@@ -307,6 +276,7 @@ const resetFilters = () => {
             </label>
           </div>
         </div>
+
         <!-- Filter: Seats -->
         <div class="w-full md:w-1/2 lg:w-auto order-3">
           <h3 class="font-bold mb-4">Seats</h3>
@@ -314,7 +284,6 @@ const resetFilters = () => {
             <div
               class="flex justify-between text-xs font-bold text-gray-600 mb-2 relative z-10 pointer-events-none"
             >
-              <!-- Добавлен :key="seat" -->
               <span v-for="seat in seatMinMap" :key="seat"> {{ seat }}+ </span>
             </div>
 
@@ -341,11 +310,11 @@ const resetFilters = () => {
             </div>
           </div>
         </div>
+
         <!-- Filter: Price Range -->
         <div class="w-full md:w-1/2 lg:w-auto order-5">
           <h3 class="font-bold mb-4">Price range</h3>
           <div class="flex gap-4 text-sm">
-            <!-- Min Price Input -->
             <div
               class="flex flex-col border border-gray-300 rounded-md p-2 w-full focus-within:border-sec focus-within:ring-1 focus-within:ring-sec transition-all"
             >
@@ -368,7 +337,6 @@ const resetFilters = () => {
               </div>
             </div>
 
-            <!-- Max Price Input -->
             <div
               class="flex flex-col border border-gray-300 rounded-md p-2 w-full focus-within:border-sec focus-within:ring-1 focus-within:ring-sec transition-all"
             >
@@ -396,18 +364,18 @@ const resetFilters = () => {
 
       <!-- СПИСОК КАРТОЧЕК АВТОМОБИЛЕЙ -->
       <div class="flex-1 flex flex-col gap-4">
-        <!-- Панель сортировки (Верхняя часть контента) -->
+        <!-- Панель сортировки -->
         <div
           class="hidden lg:flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200"
         >
-          <span class="font-bold text-gray-700"
-            >{{ filteredCars.length }} cars available</span
-          >
+          <span class="font-bold text-gray-700">
+            {{ filteredCars.length }} cars available
+          </span>
 
           <div class="flex items-center gap-3 w-auto">
-            <span class="text-sm font-bold text-gray-500 text-nowrap"
-              >Sort by</span
-            >
+            <span class="text-sm font-bold text-gray-500 text-nowrap">
+              Sort by
+            </span>
             <UISelect
               id="sortSelect"
               v-model="filters.sortBy"
@@ -416,25 +384,25 @@ const resetFilters = () => {
             />
           </div>
         </div>
+
         <div
           v-if="!filteredCars.length"
           class="text-center py-12 text-xl font-bold text-gray-500 bg-gray-50 rounded-lg border border-gray-200"
         >
           Sorry, there’s no vehicle.
         </div>
-        <!-- Карточка (Grid Версия) -->
+
+        <!-- Карточка -->
         <div
           v-for="car in filteredCars"
           v-else
           :key="car.id"
           class="grid grid-cols-1 md:grid-cols-12 gap-x-6 gap-y-4 md:gap-y-0 pb-6 border-b border-gray-200"
         >
-          <!-- Левая часть: Изображение -->
-          <!-- Левая часть: Изображение или Слайдер -->
+          <!-- Изображение / Слайдер -->
           <div
             class="flex items-center justify-center -mx-4 md:mx-0 md:col-span-4 col-span-full relative h-72"
           >
-            <!-- Если слайдер активен и есть изображения -->
             <ClientOnly v-if="activeSliderId === car.id && car.images?.length">
               <div class="relative w-full h-full">
                 <Swiper
@@ -460,7 +428,7 @@ const resetFilters = () => {
 
                 <UIBtn
                   sec
-                  class="absolute! top-3 right-3 z-20 bg-black/60 text-white text-xs font-bold px-3 py-2 rounded-md hover:bg-black/75 transition-colors"
+                  class="absolute! top-3 right-3 z-20 bg-black/60 text-white text-xs font-bold px-3 py-2 rounded-bl-none! hover:bg-black/75 transition-colors"
                   @click.stop="openFullscreenSlider(car)"
                 >
                   Full screen
@@ -468,7 +436,6 @@ const resetFilters = () => {
               </div>
             </ClientOnly>
 
-            <!-- Иначе показываем превью (до клика) -->
             <div
               v-else
               class="w-full h-full flex items-center justify-center"
@@ -484,7 +451,6 @@ const resetFilters = () => {
               />
               <UISvg v-else :svg="ICON_CAR_PLACEHOLDER" class="max-h-72" />
 
-              <!-- Подсказка, что можно кликнуть (иконка галереи), показывается если есть доп. фото -->
               <div
                 v-if="car.images?.length"
                 class="absolute bottom-2 right-2 bg-sec/60 text-white text-xs px-2 py-1 rounded-md transition-opacity flex items-center gap-1"
@@ -520,8 +486,9 @@ const resetFilters = () => {
                 OR SIMILAR {{ car.category.name }}
                 <span
                   class="bg-gray-300 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]"
-                  >i</span
                 >
+                  i
+                </span>
 
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-62.5 px-3 py-2 bg-gray-800 text-white text-xs font-normal normal-case text-center rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20 pointer-events-none shadow-lg"
@@ -536,97 +503,7 @@ const resetFilters = () => {
             </div>
 
             <!-- Иконки характеристик -->
-            <div
-              class="flex flex-wrap items-center gap-4 text-sm font-bold text-gray-700 mb-4"
-            >
-              <!-- seats -->
-              <div class="relative group flex items-center cursor-help">
-                <span class="flex items-center gap-1"
-                  >👥 {{ car.features.seats }}</span
-                >
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  seats
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-              <!-- Doors -->
-              <div class="relative group flex items-center cursor-help">
-                <span class="flex items-center gap-1"
-                  >🚪 {{ car.features.doors }}</span
-                >
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  Doors
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-              <!-- Bags -->
-              <div class="relative group flex items-center cursor-help">
-                <span class="flex items-center gap-1"
-                  >🧳 {{ car.features.bags }}</span
-                >
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  Bags
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-              <!-- Transmission -->
-              <div class="relative group flex items-center cursor-help">
-                <span class="flex items-center gap-1"
-                  >⚙️ {{ car.features.transmission }}</span
-                >
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  {{
-                    car.features.transmission === "A" ? "Automatic" : "Manual"
-                  }}
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-              <!-- A/C -->
-              <div
-                v-if="car.features.ac"
-                class="relative group flex items-center cursor-help"
-              >
-                <span class="flex items-center gap-1">❄️ A/C</span>
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  Air Conditioning
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-              <!-- Age -->
-              <div class="relative group flex items-center cursor-help">
-                <span class="flex items-center gap-1"
-                  >🆔 {{ car.features.age }}</span
-                >
-                <div
-                  class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none"
-                >
-                  Age
-                  <div
-                    class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"
-                  />
-                </div>
-              </div>
-            </div>
+            <PartCarFeatures :car="car" class="mb-4" />
 
             <!-- Список преимуществ (скрыт на мобильном) -->
             <ul
@@ -654,47 +531,10 @@ const resetFilters = () => {
           </div>
 
           <!-- Правая часть: Цена и Кнопка -->
-          <!-- На Desktop: колонка справа. На Mobile: смещение влево или вправо по дизайну, тут мы ставим его вниз справа -->
           <div
-            class="flex flex-col md:justify-end items-end text-right md:mt-0 -mt-10 md:col-span-3 col-span-full"
+            class="flex flex-col md:justify-end md:items-end items-center text-right md:col-span-3 col-span-full"
           >
-            <!-- Блок с ценой -->
-            <div class="mb-4">
-              <p
-                class="text-xs font-bold tracking-wider uppercase mb-0.5 bg-linear-to-t from-dark to-dark bg-clip-text text-transparent w-fit"
-              >
-                From
-              </p>
-
-              <p
-                v-if="car.hasDiscount"
-                class="text-sm font-bold text-zinc-500 decoration-dark line-through mb-1 leading-none"
-              >
-                €{{ formatPrice(car.basePriceDay) }}
-                <span class="text-sm font-normal">/ day</span>
-              </p>
-
-              <p
-                class="text-2xl font-black mb-1 leading-none"
-                :class="{ 'text-sec': car.hasDiscount }"
-              >
-                €{{ formatPrice(car.finalPriceDay) }}
-                <span class="text-lg font-normal">/ day</span>
-              </p>
-
-              <p
-                class="text-md font-bold tracking-wider uppercase mb-0.5 bg-linear-to-t from-dark to-dark bg-clip-text text-transparent w-fit"
-              >
-                TOTAL
-                <!-- <span
-                  v-if="car.hasDiscount"
-                  class="line-through text-gray-400 mr-2"
-                >
-                  €{{ formatPrice(car.oldTotalPrice) }}
-                </span> -->
-                <strong>€{{ formatPrice(car.totalPrice) }}</strong>
-              </p>
-            </div>
+            <PartCarPrice :car="car" :days="rentalDays" />
 
             <UIBtn
               main
@@ -707,6 +547,8 @@ const resetFilters = () => {
         </div>
       </div>
     </div>
+
+    <!-- Fullscreen галерея -->
     <Teleport to="body">
       <div
         v-if="fullscreenCar"

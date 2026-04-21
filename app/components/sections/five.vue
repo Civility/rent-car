@@ -96,9 +96,9 @@ const toggle = (index) => {
               <!-- Кнопка/Заголовок (Вопрос) -->
               <UIBtn
                 clear
-                @click="toggle(index)"
                 class="w-full justify-between! flex-nowrap py-3! px-4! text-dark! text-left! bg-white hover:bg-zinc-200!"
                 :class="{ 'rouded-b-0!': openIndexes.includes(index) }"
+                @click="toggle(index)"
               >
                 <h3 class="text-md lg:text-base font-semibold pr-4">
                   {{ item.title }}
@@ -140,7 +140,7 @@ const toggle = (index) => {
                   <div
                     class="text-lg leading-relaxed text-white prose prose-invert max-w-none prose-p:my-2 prose-ul:my-2"
                     v-html="item.text"
-                  ></div>
+                  />
                 </div>
               </transition>
             </div>

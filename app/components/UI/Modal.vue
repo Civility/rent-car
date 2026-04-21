@@ -14,7 +14,7 @@ const props = defineProps({
   },
   buttonText: {
     type: String,
-    default: "OK",
+    default: "",
   },
   type: {
     type: String,
@@ -27,7 +27,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue", "close", "confirm"]);
-
+useHead({
+  bodyAttrs: {
+    class: computed(() => (props.modelValue ? "overflow-hidden" : "")),
+  },
+});
 const toneClasses = computed(() => {
   switch (props.type) {
     case "error":
@@ -83,18 +87,6 @@ const handleBackdropClick = () => {
     closeModal();
   }
 };
-
-watch(
-  () => props.modelValue,
-  (isOpen) => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-  },
-  { immediate: true },
-);
-
-onBeforeUnmount(() => {
-  document.body.style.overflow = "";
-});
 </script>
 
 <template>
@@ -116,17 +108,17 @@ onBeforeUnmount(() => {
           class="relative w-full max-w-md overflow-hidden rounded-[28px] border border-white/60 bg-linear-to-br p-7 shadow-2xl"
           :class="toneClasses.panel"
         >
-          <button
-            type="button"
-            class="absolute right-4 top-4 h-10 w-10 rounded-full border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-800"
+          <UIBtn
+            clear
+            class="absolute! right-4 top-4 h-10 w-10 rounded-full! text-dark! border-4! border-dark! bg-zinc-200! hover:bg-main! hover:text-zinc-100!"
             @click="closeModal"
           >
             x
-          </button>
+          </UIBtn>
 
-          <div class="mb-5 flex items-center gap-4">
+          <div class="mb-5 flex items-end gap-4">
             <div
-              class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-lg"
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-lg"
               :class="toneClasses.badge"
             >
               {{ toneClasses.icon }}
@@ -139,7 +131,7 @@ onBeforeUnmount(() => {
               >
                 Notification
               </p>
-              <h3 class="mt-1 text-2xl font-black leading-tight text-zinc-900">
+              <h3 class="mt-3 text-xl font-black leading-tight text-zinc-900">
                 {{ title }}
               </h3>
             </div>
@@ -163,11 +155,12 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="mt-6 flex justify-end gap-3">
-            <UIBtn clear class="px-5" @click="closeModal"> Close </UIBtn>
+            <UIBtn sec class="px-5" @click="closeModal"> Close </UIBtn>
 
             <UIBtn
+              v-if="buttonText"
               main
-              class="px-6 py-3! font-extrabold uppercase"
+              class="px-4 w-full py-3! font-extrabold uppercase"
               @click="confirmModal"
             >
               {{ buttonText }}
