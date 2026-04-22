@@ -1,0 +1,324 @@
+{
+  "common": {
+    "time": "Time",
+    "find": "Find",
+    "car": "car",
+    "close": "Close",
+    "select": "Select",
+    "nav": {
+      "chooseDates": "Choose dates",
+      "chooseCar": "Choose car",
+      "driverDetails": "Driver details"
+    },
+    "features": {
+      "seats": "Seats",
+      "doors": "Doors",
+      "bags": "Bags",
+      "transmission": {
+        "A": "Automatic",
+        "M": "Manual"
+      },
+      "ac": "Air Conditioning",
+      "age": "Minimum age"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About us",
+    "terms": "Rental terms",
+    "faq": "FAQ",
+    "contacts": "Contact us"
+  },
+  "hero": {
+    "title": "Affordable cars in Rent",
+    "subtitle": "Comfort for your travels and business trips!",
+    "pickUp": "Pick Up",
+    "returnTo": "Return To",
+    "sameReturn": "Same return location",
+    "pickupDate": "Pickup Date",
+    "returnDate": "Return Date",
+    "pickupDateTime": "Pickup date and time",
+    "returnDateTime": "Return date and time",
+    "showCar": "Show Car",
+    "fillFields": "Please fill in the fields",
+    "selectLocation": "Select location",
+    "selectReturnLocation": "Select return location"
+  },
+  "validation": {
+    "selectStartDate": "Select start date",
+    "selectPickupTime": "Select pickup time",
+    "selectReturnDate": "Select return date",
+    "selectReturnTime": "Select return time",
+    "minPeriodOneHour": "Min period is 1 hour"
+  },
+  "about": {
+    "title": "About Us",
+    "items": [
+      {
+        "alt": "Rent-Me car rental service in Thessaloniki",
+        "text": "Rent Me is a car rental service that will make any trip or business travel more comfortable and cost-effective."
+      },
+      {
+        "alt": "Clean and maintained rental cars ready for booking",
+        "text": "Rent Me offers a wide selection of vehicles that undergo regular maintenance and cleaning."
+      },
+      {
+        "alt": "Rent-Me vehicle rental and car sales services",
+        "text": "Additionally, Rent Me provides vehicle sales services."
+      }
+    ]
+  },
+  "benefits": {
+    "title0": "Why",
+    "title": " choose Rent Me?",
+    "items": [
+      {
+        "title": "Assortment",
+        "text": "Wide selection of cars for rental and sale."
+      },
+      { "title": "Quality", "text": "Professional car servicing." },
+      { "title": "Speed", "text": "Fast and easy rental procedure." },
+      { "title": "Affordability", "text": "Optimal pricing offers." },
+      { "title": "Service", "text": "Continuous customer support." },
+      { "title": "Additional services", "text": "Optional additional options." }
+    ]
+  },
+  "terms": {
+    "title0": "Car rental",
+    "title": " terms",
+    "intro": "Please familiarise yourself with the car rental terms at Rent Me to ensure that your experience with the service is as pleasant as possible.",
+    "rules": [
+      "To rent a car, it is necessary to present documents confirming your identity. Cars are rented to individuals who have reached the age of 23. The minimum driving experience is 3 years.",
+      "Insurance packages are not provided for drivers over 70 years old.",
+      "You can pay for the car rental service in cash or by credit card. All prices are indicated including VAT.",
+      "At the time of renting the car, you receive the vehicle with a full tank of fuel. Upon the end of the rental period, the car should be returned with the same fuel level.",
+      "If you need to extend the rental period, you should notify Rent Me representative no later than one day before the rental period specified in the contract ends.",
+      "Clients who return the car before the end of the rental period will not be reimbursed for the remaining funds. For long-term rentals of 7 days or more, 50% of the unused rental period cost is refunded.",
+      "The costs of parking and fines incurred during the car rental are the responsibility of the renter.",
+      "If you lose the key to the rented car, you are required to reimburse its cost.",
+      "Delivery of the car to your chosen location is charged separately.",
+      "In case of returning the car later than the end of the rental period, the company reserves the right to charge a penalty for each hour or day of delay."
+    ]
+  },
+  "faq": {
+    "title0": "Frequently Asked",
+    "title": " Questions",
+    "items": [
+      {
+        "title": "How to book a car?",
+        "text": "<p>Use the convenient form on the <strong> Home page </strong> of Rent Me. Select the car brand you like and the rental period. Submit the completed application and wait for the booking confirmation. Our manager will contact you to confirm the details.</p>"
+      },
+      {
+        "title": "Will there be fuel in the car I rent?",
+        "text": "<p>All cars are rented out with a full tank of fuel. Please note that at the end of the rental period, you must return the car with the same fuel level.</p>"
+      },
+      {
+        "title": "What is the mileage limit for the car rental period?",
+        "text": "<p>There is no mileage limit.</p>"
+      },
+      {
+        "title": "How to rent multiple cars at once?",
+        "text": "<p>During online booking, you can reserve only one car. However, if you are travelling with a large group, you can book multiple vehicles by informing our manager inadvance. Please note that each rented car must have aseparate driver with the corresponding driver's licence.</p>"
+      },
+      {
+        "title": "What additional services do you offer?",
+        "text": "<p>You can request the following additional services:</p> <ul class='list-disc list-inside'><li>Child car seat (free upon request)</li><li>GPS navigation system</li><li>Registration of a second driver</li><li>Car delivery to the location specified by you</li></ul><p>You can order additional services during the bookingprocess, while speaking with a manager, or directly at ouroffice.</p><p>sales services upon client request.</p>"
+      },
+      {
+        "title": "Can I choose the location for pick-up or drop-off of the car?",
+        "text": "<p>Yes, you can. Please specify the desired location during online booking or in a conversation with the manager.</p>"
+      },
+      {
+        "title": "What payment methods do you accept?",
+        "text": "<p>You can pay for car rental services at Rent Me in cash, with VISA, MasterCard, and Maestro bank cards, as well as through the PayPal online payment service.</p>"
+      },
+      {
+        "title": "Can I rent a car for a few hours?",
+        "text": "<p>At Rent Me, you can rent a car even for just one hour. However, you will still need to pay for the minimum rental period, which is a full day.</p>"
+      },
+      {
+        "title": "How do I choose a specific car brand?",
+        "text": "<p>During the booking process, you can specify the exact model — that is the car you will receive.</p>"
+      },
+      {
+        "title": "Which documents do I need to provide?",
+        "text": "<p>To rent a car, you will need to present your passport and an international or national driver's licence. Please note that at the time of rental, the driver must be at least 23 years old. It is also required to have a minimum of 3 years of driving experience.</p>"
+      },
+      {
+        "title": "I want to make changes to my reservation. How can I do that?",
+        "text": "<p>Please write to our customer support at <a href='mailto:rentme{'@'}gmail.com'>rentme{'@'}gmail.com</a> or call <a href='tel:+305698965677' target='_blank' rel='noreferrer noopener'>+305698965677</a>. Our specialists will review your request and make changes to your reservation if possible.</p>"
+      },
+      {
+        "title": "What fuel should be used to refuel a rented car?",
+        "text": "<p>Information about the type of fuel used in the car is specified in the rental agreement. If you accidentally refuel the vehicle with the wrong fuel, please contact Rent Me customer support immediately.</p>"
+      },
+      {
+        "title": "It seems like I got lost...",
+        "text": "<p>Do not worry! Upon client's request, we provide a map of the area and a GPS navigator. If for some reason you still cannot find your way, please call our hotline. Our managers will guide you on how to get to the location you are interested in.</p>"
+      },
+      {
+        "title": "Can I transfer control of the car to third parties?",
+        "text": "<p>Only if you registered an additional driver when signing the rental agreement. Otherwise, only the person who presents a valid driver's licence and signs the rental agreement with Rent Me can operate the vehicle.</p>"
+      },
+      {
+        "title": "How can I extend the car rental period?",
+        "text": "<p>If you have already rented a car and want to extend the rental period, please call our hotline or visit the Rent Me office directly at least 24 hours before the rental period expires.</p>"
+      },
+      {
+        "title": "What should I do in emergency situations (breakdown, car theft, traffic accident)? ",
+        "text": "<p>Contact our support service at <a href='tel:+305698965677' target='_blank' rel='noreferrer noopener'>+305698965677</a> as soon as possible.</p><p>In the case of a traffic accident, please also call emergency services:</p><ul class='list-disc list-inside'><li><a href='tel:112' target='_blank' rel='noreferrer noopener'>Police: 112</a>  (or 100)</li><li> <a href='tel:116' target='_blank' rel='noreferrer noopener'>Ambulance: 166</a></li></ul><p>After calling our hotline, please wait for the arrival of a Rent Me agent who will advise you on how to proceed further.</p>"
+      }
+    ]
+  },
+  "contacts": {
+    "title": "Contacts",
+    "subtitle": "Contact us in any convenient way",
+    "callback": "Call me back",
+    "leaveDetails0": "Leave your contact details.",
+    "leaveDetails": "Our managers will contact you shortly.",
+    "fields": {
+      "name": "Name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "message": "Your message",
+      "send": "Send"
+    },
+    "validations": [
+      {
+        "required": "Name is required",
+        "minLength": "Minimum 2 characters",
+        "maxLength": "Maximum 32 characters",
+        "lettersOnly": "Name must contain only letters"
+      },
+      {
+        "required": "Email is required",
+        "email": "Invalid email address"
+      },
+      {
+        "required": "Phone is required",
+        "minLength": "Phone number is incomplete"
+      },
+      {
+        "required": "Message is required",
+        "minLength": "Minimum 6 characters",
+        "minTwoWords": "Message must contain at least 2 words",
+        "noLinksOrHtml": "Links and HTML tags are not allowed"
+      }
+    ],
+    "resultError": "Failed to send your request. Please try again.",
+    "formLabelConsent": "consent to data processing",
+    "formLabelWebsite": "Leave empty",
+    "modal": {
+      "title": "Your message has been sent successfully.",
+      "note": "Thank you! Our managers will contact you shortly."
+    }
+  },
+  "booking": {
+    "h1": "Choose your rental car",
+    "carsAvailable": "cars available",
+    "sortBy": "Sort by",
+    "sorryVehicle": "Sorry, there’s no vehicle.",
+    "fullScreen": "Full screen",
+    "photos": "photos",
+    "orSimilar": "OR SIMILAR",
+    "receiveModel": "You'll receive this model or an equivalent vehicle for your convenience.",
+    "filters": "Filters",
+    "resetAll": "Reset all",
+    "transmission": "Transmission",
+    "vehicleType": "Vehicle type",
+    "seats": "Seats",
+    "priceRange": "Price range",
+    "sortOptions": {
+      "bestDeals": "Best deals",
+      "lowerPrice": "Lower price",
+      "higherPrice": "Higher price",
+      "recommended": "Recommended"
+    },
+    "benefits": {
+      "unlimitedMileage": "Unlimited mileage",
+      "basicProtection": "Basic protection included",
+      "freeCancellation": "Free cancellation up to 48h before pick up"
+    },
+    "transmissionOptions": {
+      "automatic": "Automatic",
+      "manual": "Manual",
+      "both": "Both"
+    },
+    "typeOptions": {
+      "car": "Car",
+      "vans": "Vans & Trucks",
+      "premium": "Premium"
+    }
+  },
+  "order": {
+    "h1": "Driver details",
+    "pickUp": "Pick-up",
+    "dropOff": "Drop-off",
+    "from": "From",
+    "to": "To",
+    "rentalPriod": "Rental period",
+    "day": "day",
+    "noCarSelected": "No car selected",
+    "modal": {
+      "title": "Your request has been sent successfully.",
+      "note": "Our manager will review your booking and contact you shortly if any details need clarification."
+    },
+    "minPrice": "min price",
+    "maxPrice": "max price",
+    "total": "Total",
+    "pricePerDay": " Price per day",
+    "iHaveReady": "I have read, understood and I accept the",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "dob": "Date of birth",
+      "placeholderName": "e.g. John",
+      "placeholderLastName": "e.g. Doe",
+      "placeholderDob": "Select Date",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "submitIsLoading": "Processing...",
+    "submit": "Order a car",
+    "rules": {
+      "firstName": { "required": "Enter your first name" },
+      "lastName": { "required": "Enter your last name" },
+      "dateOfBirth": { "required": "Select your date of birth" },
+      "email": {
+        "required": "Enter your email",
+        "format": "Invalid email format"
+      },
+      "phone": { "required": "Enter your phone number" },
+      "privacyPolicy": { "required": "You must accept the Privacy Policy" }
+    }
+  },
+  "errors": {
+    "title": {
+      "isNotFound": "Page not found",
+      "403": "Access denied",
+      "500": "Server error",
+      "def": "Something went wrong"
+    },
+    "server": "Server error",
+    "backHome": "Back to home",
+    "reload": "Reload page",
+    "technicalDetails": "Technical details",
+    "description": {
+      "isNotFound": "The page you are looking for doesn't exist or has been moved.",
+      "403": "You don't have permission to view this page.",
+      "500": "Our servers are having trouble right now. Please try again shortly.",
+      "def": "An unexpected error occurred. Please try again."
+    }
+  },
+  "langSwitcher": {
+    "label": "Language"
+  },
+  "seo": {
+    "title": "Car Rental in Thessaloniki | Rent-Me",
+    "description": "Affordable car rental in Thessaloniki and Lagadas with flexible pick-up, unlimited mileage and fast online booking.",
+    "order": {
+      "title": "Driver Details",
+      "description": "Complete your booking details."
+    }
+  }
+}

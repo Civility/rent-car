@@ -1,4 +1,5 @@
 <script setup>
+const { t } = useI18n();
 const props = defineProps({
   car: { type: Object, required: true },
   days: { type: Number, default: 1 },
@@ -12,7 +13,7 @@ const pricing = computed(() => getCarPricing(props.car, props.days));
   <div class="mt-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
     <div class="flex justify-between items-center mb-1">
       <span class="text-sm font-bold text-gray-500 uppercase">
-        Price per day
+        {{ t("order.pricePerDay") }}
       </span>
 
       <div class="text-right">
@@ -34,7 +35,7 @@ const pricing = computed(() => getCarPricing(props.car, props.days));
       <span
         class="text-lg font-black bg-linear-to-t from-dark to-dark bg-clip-text text-transparent uppercase tracking-wide"
       >
-        Total
+        {{ t("order.total") }}
       </span>
       <div class="text-right">
         <div class="text-2xl font-black">

@@ -1,4 +1,6 @@
 <script setup>
+  const config = useRuntimeConfig();
+
   const props = defineProps({
     error: {
       type: Object,
@@ -7,31 +9,29 @@
   });
 
   useHead({
-    title: `Error ${props.error?.statusCode || ""} | Rent-Me`,
+    title: `Error ${props.error?.statusCode || ""} | ${config.public.siteName}`,
   });
 
   const isNotFound = computed(() => props.error?.statusCode === 404);
 
   const title = computed(() => {
-    if (isNotFound.value) return "Page not found";
-    if (props.error?.statusCode === 403) return "Access denied";
-    if (props.error?.statusCode >= 500) return "Server error";
-    return "Something went wrong";
+    if (isNotFound.value) return $t("errors.title.isNotFound");
+    if (props.error?.statusCode === 403) return $t("errors.title.403");
+    if (props.error?.statusCode >= 500) return $t("errors.title.500");
+    return $t("errors.title.def");
   });
 
   const description = computed(() => {
     if (isNotFound.value) {
-      return "The page you are looking for doesn't exist or has been moved.";
+      return $t("errors.description.isNotFound");
     }
     if (props.error?.statusCode === 403) {
-      return "You don't have permission to view this page.";
+      return $t("errors.description.def");
     }
     if (props.error?.statusCode >= 500) {
-      return "Our servers are having trouble right now. Please try again shortly.";
+      return $t("errors.description.def");
     }
-    return (
-      props.error?.message || "An unexpected error occurred. Please try again."
-    );
+    return props.error?.message || $t("errors.description.def");
   });
 
   const handleHome = () => {
@@ -68,14 +68,14 @@
           main
           class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold uppercase"
           @click="handleHome">
-          Back to home
+          {{ $t("errors.backHome") }}
         </UIBtn>
 
         <UIBtn
           clear
           class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold uppercase border border-gray-300 hover:bg-gray-50"
           @click="handleReload">
-          Reload page
+          {{ $t("errors.reload") }}
         </UIBtn>
       </div>
 
@@ -83,7 +83,7 @@
         v-if="error?.stack && $config.public.showErrorStack"
         class="mt-8 text-left">
         <summary class="cursor-pointer text-sm text-gray-500">
-          Technical details
+          {{ $t("errors.technicalDetails") }}
         </summary>
         <pre
           class="mt-3 p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs overflow-auto whitespace-pre-wrap"

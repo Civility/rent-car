@@ -39,15 +39,15 @@ const isClass = computed(() => {
 <style scoped>
 @reference "../../assets/main.css";
 .btn {
-  @apply rounded-lg inline-flex items-center shadow-lg justify-center gap-1.5 cursor-pointer transition-all outline-none border-none bg-transparent;
+  @apply rounded-lg inline-flex items-center justify-center gap-1.5 cursor-pointer transition-all outline-none bg-transparent;
   @apply text-zinc-100 py-1.5;
   @apply disabled:cursor-not-allowed disabled:opacity-70;
 }
 .btn--main {
-  @apply relative bg-main-dark hover:bg-main/90;
+  @apply relative bg-main-dark hover:bg-main/90 shadow-lg;
 }
 .btn--sec {
-  @apply relative bg-sec hover:bg-sec/70;
+  @apply relative bg-sec hover:bg-sec/70 shadow-lg;
 }
 .btn--clear {
   @apply py-0! shadow-none! rounded-none;

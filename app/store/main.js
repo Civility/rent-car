@@ -5,16 +5,11 @@ export const useMainStore = defineStore("main", {
   state: () => ({
     isLoading: false,
     callbackError: null,
-    lang: "ru", // el, de, en
   }),
 
   actions: {
     setLoading(status) {
       this.isLoading = status;
-    },
-
-    setLang(newLang) {
-      this.lang = newLang;
     },
 
     async sendCallMeBack(payload) {

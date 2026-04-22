@@ -1,138 +1,155 @@
 <script setup>
-  import { subYears } from "date-fns";
-  import { useVuelidate } from "@vuelidate/core";
-  import { required, email, helpers } from "@vuelidate/validators";
-  import { VueDatePicker } from "@vuepic/vue-datepicker";
-  import "@vuepic/vue-datepicker/dist/main.css";
-  import { useRouter } from "vue-router";
-  import { storeToRefs } from "pinia";
-  import { useBookingStore } from "@/store/booking";
+import { subYears } from "date-fns";
+import { useVuelidate } from "@vuelidate/core";
+import { required, email, helpers } from "@vuelidate/validators";
+import { VueDatePicker } from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useBookingStore } from "@/store/booking";
+const { t } = useI18n();
+const localePath = useLocalePath();
+useSeoMeta({
+  title: t("seo.order.title"),
+  description: t("seo.order.description"),
+  robots: "noindex,follow",
+});
+const { dateLocale } = useDateLocale();
+const router = useRouter();
+const bookingStore = useBookingStore();
+const { submitOrder, fetchLocations } = bookingStore;
+const { searchForm, locations, isLoading, orderError } =
+  storeToRefs(bookingStore);
 
-  const router = useRouter();
-  const bookingStore = useBookingStore();
-  const { submitOrder, fetchLocations } = bookingStore;
-  const { searchForm, locations, isLoading, orderError } =
-    storeToRefs(bookingStore);
+// --- Composables ---
+const { formatDateValue, formatTimeValue, useRentalDays } = useBookingDates();
+const { pickupLocationLabel, dropoffLocationLabel } = useBookingLocations(
+  locations,
+  searchForm,
+);
+const rentalDays = useRentalDays(searchForm);
 
-  // --- Composables ---
-  const { formatDateValue, formatTimeValue, useRentalDays } = useBookingDates();
-  const { pickupLocationLabel, dropoffLocationLabel } = useBookingLocations(
-    locations,
-    searchForm,
-  );
-  const rentalDays = useRentalDays(searchForm);
+const {
+  isOpen: isSuccessModalOpen,
+  open: openSuccessModal,
+  close: handleSuccessModalClose,
+} = useSuccessRedirect({
+  redirectTo: "/",
+  delay: 3500,
+  onBeforeRedirect: () => bookingStore.$reset(),
+});
 
-  const {
-    isOpen: isSuccessModalOpen,
-    open: openSuccessModal,
-    close: handleSuccessModalClose,
-  } = useSuccessRedirect({
-    redirectTo: "/",
-    delay: 3500,
-    onBeforeRedirect: () => bookingStore.$reset(),
-  });
+// --- Guard + подгрузка локаций ---
+onMounted(async () => {
+  if (
+    searchForm.value.auto === null ||
+    searchForm.value.dateFrom === null ||
+    searchForm.value.dateTo === null
+  ) {
+    router.push(localePath("/"));
+    return;
+  }
 
-  // --- Guard + подгрузка локаций ---
-  onMounted(async () => {
-    if (
-      searchForm.value.auto === null ||
-      searchForm.value.dateFrom === null ||
-      searchForm.value.dateTo === null
-    ) {
-      router.push("/");
-      return;
-    }
+  if (!locations.value.length) {
+    await fetchLocations();
+  }
+});
 
-    if (!locations.value.length) {
-      await fetchLocations();
-    }
-  });
+// --- Минимальный возраст водителя для DatePicker ---
+const maxDobDate = computed(() => {
+  const requiredAge = searchForm.value.auto?.features?.age || 23;
+  return subYears(new Date(), requiredAge);
+});
 
-  // --- Минимальный возраст водителя для DatePicker ---
-  const maxDobDate = computed(() => {
-    const requiredAge = searchForm.value.auto?.features?.age || 23;
-    return subYears(new Date(), requiredAge);
-  });
+// --- Анти-спам: honeypot + тайминг ---
+const startTime = ref(0);
+const trapValue = ref("");
 
-  // --- Анти-спам: honeypot + тайминг ---
-  const startTime = ref(0);
-  const trapValue = ref("");
+onMounted(() => {
+  startTime.value = Date.now();
+});
 
-  onMounted(() => {
-    startTime.value = Date.now();
-  });
+// --- Форма водителя ---
+const form = reactive({
+  firstName: "",
+  lastName: "",
+  dateOfBirth: "",
+  email: "",
+  phone: "",
+  privacyPolicy: false,
+  isConsent: false,
+});
 
-  // --- Форма водителя ---
-  const form = reactive({
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    email: "",
-    phone: "",
-    privacyPolicy: false,
-    isConsent: false,
-  });
+const rules = {
+  firstName: {
+    required: helpers.withMessage(
+      $t("order.rules.firstName.required"),
+      required,
+    ),
+  },
+  lastName: {
+    required: helpers.withMessage(
+      $t("order.rules.lastName.required"),
+      required,
+    ),
+  },
+  dateOfBirth: {
+    required: helpers.withMessage(
+      $t("order.rules.dateOfBirth.required"),
+      required,
+    ),
+  },
+  email: {
+    required: helpers.withMessage($t("order.rules.email.required"), required),
+    email: helpers.withMessage($t("order.rules.email.format"), email),
+  },
+  phone: {
+    required: helpers.withMessage($t("order.rules.phone.required"), required),
+  },
+  privacyPolicy: {
+    required: helpers.withMessage(
+      $t("order.rules.privacyPolicy.required"),
+      (value) => value === true,
+    ),
+  },
+};
 
-  const rules = {
-    firstName: {
-      required: helpers.withMessage("Enter your first name", required),
-    },
-    lastName: {
-      required: helpers.withMessage("Enter your last name", required),
-    },
-    dateOfBirth: {
-      required: helpers.withMessage("Select your date of birth", required),
-    },
-    email: {
-      required: helpers.withMessage("Enter your email", required),
-      email: helpers.withMessage("Invalid email format", email),
-    },
-    phone: {
-      required: helpers.withMessage("Enter your phone number", required),
-    },
-    privacyPolicy: {
-      required: helpers.withMessage(
-        "You must accept the Privacy Policy",
-        (value) => value === true,
-      ),
-    },
-  };
+const v$ = useVuelidate(rules, form, { $autoDirty: true });
 
-  const v$ = useVuelidate(rules, form, { $autoDirty: true });
+const isFormDisabled = computed(() => v$.value.$invalid || !form.privacyPolicy);
 
-  const isFormDisabled = computed(() => v$.value.$error || !form.privacyPolicy);
+const handleSubmit = async () => {
+  const isValid = await v$.value.$validate();
+  if (!isValid) return;
 
-  const handleSubmit = async () => {
-    const isValid = await v$.value.$validate();
-    if (!isValid) return;
+  const timeElapsed = Date.now() - startTime.value;
+  if (timeElapsed < 2500 || form.isConsent || trapValue.value !== "") return;
 
-    const timeElapsed = Date.now() - startTime.value;
-    if (timeElapsed < 2500 || form.isConsent || trapValue.value !== "") {
-      console.log("Spam detected. Blocked silently.");
-      return;
-    }
+  const result = await submitOrder(form);
+  if (!result.success) return;
 
-    const result = await submitOrder(form);
-    if (!result.success) return;
-
-    openSuccessModal();
-  };
+  openSuccessModal();
+};
 </script>
 
 <template>
-  <main class="lg:container lg:mx-auto py-8 md:px-0 px-4">
+  <main class="container mx-auto py-8 md:px-0 px-4">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- ЛЕВАЯ ЧАСТЬ: Форма детали водителя -->
       <div class="lg:col-span-2 flex flex-col gap-6">
-        <h1 class="text-3xl font-extrabold mb-2">Driver details</h1>
+        <h1 class="text-3xl font-extrabold mb-2 px-6 lg:px-0">
+          {{ $t("order.h1") }}
+        </h1>
 
         <form
           class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6"
-          @submit.prevent="handleSubmit">
+          @submit.prevent="handleSubmit"
+        >
           <!-- Hiding Spam Traps -->
           <div
             class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
-            aria-hidden="true">
+            aria-hidden="true"
+          >
             <label>
               <span>consent to data processing</span>
               <input
@@ -140,7 +157,8 @@
                 v-model="form.isConsent"
                 name="trap-consent"
                 type="checkbox"
-                tabindex="-1" />
+                tabindex="-1"
+              />
             </label>
 
             <label>
@@ -151,7 +169,8 @@
                 type="text"
                 name="website_url"
                 tabindex="-1"
-                autocomplete="off" />
+                autocomplete="off"
+              />
             </label>
           </div>
 
@@ -160,7 +179,7 @@
             <div class="relative">
               <label class="block cursor-pointer">
                 <span class="block text-sm font-bold mb-2 text-zinc-900">
-                  First name*
+                  {{ $t("order.fields.firstName") }}*
                 </span>
                 <input
                   v-model="form.firstName"
@@ -171,11 +190,13 @@
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.firstName.$error ? 'border-red-400' : 'border-gray-300',
                   ]"
-                  placeholder="e.g. John" />
+                  :placeholder="$t('order.fields.placeholderName')"
+                />
               </label>
               <p
                 v-if="v$.firstName.$error"
-                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0">
+                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0"
+              >
                 {{ v$.firstName.$errors[0].$message }}
               </p>
             </div>
@@ -184,7 +205,7 @@
             <div class="relative">
               <label class="block cursor-pointer">
                 <span class="block text-sm font-bold mb-2 text-zinc-900">
-                  Last name*
+                  {{ $t("order.fields.lastName") }}*
                 </span>
                 <input
                   v-model="form.lastName"
@@ -195,11 +216,13 @@
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.lastName.$error ? 'border-red-400' : 'border-gray-300',
                   ]"
-                  placeholder="e.g. Doe" />
+                  :placeholder="$t('order.fields.placeholderLastName')"
+                />
               </label>
               <p
                 v-if="v$.lastName.$error"
-                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0">
+                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0"
+              >
                 {{ v$.lastName.$errors[0].$message }}
               </p>
             </div>
@@ -208,7 +231,7 @@
             <div class="relative">
               <div class="block cursor-pointer relative z-10">
                 <span class="block text-sm font-bold mb-2 text-zinc-900">
-                  Date of birth*
+                  {{ $t("order.fields.dob") }}*
                 </span>
                 <ClientOnly>
                   <VueDatePicker
@@ -217,7 +240,7 @@
                     :start-date="maxDobDate"
                     :time-config="{ enableTimePicker: false }"
                     :enable-time-picker="false"
-                    placeholder="Select Date"
+                    :placeholder="$t('order.fields.placeholderDob')"
                     auto-apply
                     :input-attrs="{
                       name: 'dateOfBirth',
@@ -229,12 +252,16 @@
                         'rounded-xl! h-10 w-full cursor-pointer',
                         v$.dateOfBirth.$error ? '!border-red-400' : '',
                       ],
-                    }" />
+                    }"
+                    :format-locale="dateLocale"
+                    :locale="dateLocale"
+                  />
                 </ClientOnly>
               </div>
               <p
                 v-if="v$.dateOfBirth.$error"
-                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0">
+                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0"
+              >
                 {{ v$.dateOfBirth.$errors[0].$message }}
               </p>
             </div>
@@ -243,7 +270,7 @@
             <div class="relative">
               <label class="block cursor-pointer">
                 <span class="block text-sm font-bold mb-2 text-zinc-900">
-                  Email*
+                  {{ $t("order.fields.email") }}*
                 </span>
                 <input
                   v-model="form.email"
@@ -254,11 +281,13 @@
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.email.$error ? 'border-red-400' : 'border-gray-300',
                   ]"
-                  placeholder="email@example.com" />
+                  placeholder="email@gmail.com"
+                />
               </label>
               <p
                 v-if="v$.email.$error"
-                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0">
+                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0"
+              >
                 {{ v$.email.$errors[0].$message }}
               </p>
             </div>
@@ -267,7 +296,7 @@
             <div class="relative md:col-span-2">
               <label class="block cursor-pointer">
                 <span class="block text-sm font-bold mb-2 text-zinc-900">
-                  Phone number*
+                  {{ $t("order.fields.phone") }}*
                 </span>
                 <input
                   v-model="form.phone"
@@ -278,11 +307,13 @@
                     'w-full border rounded-xl h-10 px-3 outline-none focus:border-sec transition-colors',
                     v$.phone.$error ? 'border-red-400' : 'border-gray-300',
                   ]"
-                  placeholder="+30 690 000 0000" />
+                  placeholder="+30 690 000 0000"
+                />
               </label>
               <p
                 v-if="v$.phone.$error"
-                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0">
+                class="text-red-600 text-xs font-bold absolute -bottom-4 left-0"
+              >
                 {{ v$.phone.$errors[0].$message }}
               </p>
             </div>
@@ -292,35 +323,39 @@
 
           <!-- Privacy Policy Checkbox -->
           <div class="relative">
-            <label class="flex items-start gap-3 cursor-pointer py-1">
+            <label class="flex items-end gap-3 cursor-pointer py-1">
               <input
                 v-model="form.privacyPolicy"
                 name="privacyPolicy"
                 type="checkbox"
-                class="mt-1 w-5 h-5 accent-sec shrink-0" />
+                class="mt-1 w-5 h-5 accent-sec shrink-0"
+              />
               <span class="text-sm font-medium text-gray-700">
-                I have read, understood and I accept the
+                {{ $t("order.iHaveReady") }}*
                 <a
                   href="/privacy-policy.pdf"
                   class="text-sec font-bold hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Read our Privacy Policy (opens in a new tab)"
-                  @click.stop>
+                  @click.stop
+                >
                   Privacy Policy </a
                 >.
               </span>
             </label>
             <p
               v-if="v$.privacyPolicy.$error && v$.privacyPolicy.$dirty"
-              class="text-red-600 text-xs font-bold">
+              class="text-red-600 text-xs font-bold"
+            >
               {{ v$.privacyPolicy.$errors[0].$message }}
             </p>
           </div>
 
           <div
             v-if="orderError"
-            class="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-200">
+            class="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-200"
+          >
             {{ orderError }}
           </div>
 
@@ -334,9 +369,10 @@
                 'opacity-50 bg-zinc-500! cursor-not-allowed':
                   isFormDisabled || isLoading,
               }"
-              :disabled="isFormDisabled || isLoading || isSuccessModalOpen">
-              <span v-if="isLoading">Processing...</span>
-              <span v-else>Order a car</span>
+              :disabled="isFormDisabled || isLoading || isSuccessModalOpen"
+            >
+              <span v-if="isLoading">{{ $t("order.submitIsLoading") }}</span>
+              <span v-else>{{ $t("order.submit") }}</span>
             </UIBtn>
           </div>
         </form>
@@ -345,14 +381,13 @@
       <!-- ПРАВАЯ ЧАСТЬ: Выбранные данные -->
       <aside class="lg:col-span-1">
         <div
-          class="sticky top-24 bg-white p-6 lg:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-6">
+          class="sticky top-24 bg-white p-6 lg:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col gap-6"
+        >
           <h2 class="text-xl font-bold border-b border-gray-100 pb-4">
             Your Selection
           </h2>
 
-          <div
-            v-if="searchForm.auto"
-            class="flex flex-col gap-4">
+          <div v-if="searchForm.auto" class="flex flex-col gap-4">
             <!-- Картинка выбранной машины -->
             <div class="h-40 w-full flex items-center justify-center">
               <img
@@ -364,13 +399,15 @@
                       : '/car-placeholder.png'
                 "
                 :alt="searchForm.auto.name"
-                class="max-h-full max-w-full object-contain mix-blend-multiply" />
+                class="max-h-full max-w-full object-contain mix-blend-multiply"
+              />
             </div>
 
             <!-- Название и Категория -->
             <div class="text-center pb-4 border-b border-gray-100">
               <span
-                class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                class="text-xs font-bold text-gray-500 uppercase tracking-widest"
+              >
                 {{ searchForm.auto.category?.name }}
               </span>
               <h3 class="text-xl font-black text-gray-900 mt-1 uppercase">
@@ -379,30 +416,34 @@
             </div>
 
             <!-- Иконки характеристик -->
-            <PartCarFeatures
-              :car="searchForm.auto"
-              :columns="3"
-              class="py-2" />
+            <PartCarFeatures :car="searchForm.auto" :columns="3" class="py-2" />
 
             <!-- Данные бронирования -->
             <div
-              class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+              class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3"
+            >
               <div class="flex justify-between gap-4 text-sm">
-                <span class="font-bold text-gray-500 uppercase">Pick-up</span>
+                <span class="font-bold text-gray-500 uppercase">{{
+                  $t("order.pickUp")
+                }}</span>
                 <span class="text-right font-semibold text-gray-800">
                   {{ pickupLocationLabel }}
                 </span>
               </div>
 
               <div class="flex justify-between gap-4 text-sm">
-                <span class="font-bold text-gray-500 uppercase">Drop-off</span>
+                <span class="font-bold text-gray-500 uppercase">{{
+                  $t("order.dropOff")
+                }}</span>
                 <span class="text-right font-semibold text-gray-800">
                   {{ dropoffLocationLabel }}
                 </span>
               </div>
 
               <div class="flex justify-between gap-4 text-sm">
-                <span class="font-bold text-gray-500 uppercase">From</span>
+                <span class="font-bold text-gray-500 uppercase">{{
+                  $t("order.from")
+                }}</span>
                 <span class="text-right font-semibold text-gray-800">
                   {{ formatDateValue(searchForm.dateFrom) }}
                   {{ formatTimeValue(searchForm.timeFrom) }}
@@ -410,7 +451,9 @@
               </div>
 
               <div class="flex justify-between gap-4 text-sm">
-                <span class="font-bold text-gray-500 uppercase">To</span>
+                <span class="font-bold text-gray-500 uppercase">{{
+                  $t("order.to")
+                }}</span>
                 <span class="text-right font-semibold text-gray-800">
                   {{ formatDateValue(searchForm.dateTo) }}
                   {{ formatTimeValue(searchForm.timeTo) }}
@@ -418,26 +461,27 @@
               </div>
 
               <div
-                class="flex justify-between gap-4 text-sm pt-3 border-t border-gray-200">
+                class="flex justify-between gap-4 text-sm pt-3 border-t border-gray-200"
+              >
                 <span class="font-bold text-gray-500 uppercase">
-                  Rental period
+                  {{ $t("order.rentalPriod") }}
                 </span>
                 <span class="text-right font-semibold text-gray-800">
-                  {{ rentalDays }} day<span v-if="rentalDays > 1">s</span>
+                  {{ rentalDays }} {{ $t("order.day")
+                  }}<span v-if="rentalDays > 1">s</span>
                 </span>
               </div>
             </div>
 
             <!-- Цена -->
-            <PartSummaryPrice
-              :car="searchForm.auto"
-              :days="rentalDays" />
+            <PartSummaryPrice :car="searchForm.auto" :days="rentalDays" />
           </div>
 
           <div
             v-else
-            class="py-12 bg-gray-50 flex items-center justify-center text-center text-sm text-gray-400 font-bold rounded-xl border border-dashed border-gray-300">
-            [ No car selected ]
+            class="py-12 bg-gray-50 flex items-center justify-center text-center text-sm text-gray-400 font-bold rounded-xl border border-dashed border-gray-300"
+          >
+            [ {{ $t("order.noCarSelected") }} ]
           </div>
         </div>
       </aside>
@@ -446,14 +490,12 @@
     <UIModal
       v-model="isSuccessModalOpen"
       type="success"
-      title="Your request has been sent successfully."
-      message="If the manager has any questions, they will call you back shortly to clarify the trip details."
-      button-text="Back to home"
+      :title="$t('order.modal.title')"
       @close="handleSuccessModalClose"
-      @confirm="handleSuccessModalClose">
+      @confirm="handleSuccessModalClose"
+    >
       <template #note>
-        Our manager will review your booking and contact you shortly if any
-        details need clarification.
+        {{ $t("order.modal.note") }}
       </template>
     </UIModal>
   </main>

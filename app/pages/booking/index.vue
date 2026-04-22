@@ -8,21 +8,20 @@ import "swiper/css/navigation";
 import { storeToRefs } from "pinia";
 import { useBookingStore } from "@/store/booking";
 import { useRouter } from "vue-router";
-
 const router = useRouter();
 const bookingStore = useBookingStore();
 const { setSearchForm, fetchCars } = bookingStore;
 const { searchForm, cars } = storeToRefs(bookingStore);
-
+const localePath = useLocalePath();
 // --- Composables ---
 const { getCarPricing } = useCarPricing();
 const { useRentalDays } = useBookingDates();
 const rentalDays = useRentalDays(searchForm);
-
+const { t } = useI18n();
 // --- Guard + загрузка машин ---
 onMounted(async () => {
   if (searchForm.value.dateFrom === null || searchForm.value.dateTo === null) {
-    router.push("/");
+    router.push(localePath("/"));
     return;
   }
 
@@ -31,40 +30,49 @@ onMounted(async () => {
 
 const handleSelectCar = (car) => {
   setSearchForm({ auto: car });
-  router.push("/booking/order");
+  router.push(localePath("/booking/order"));
 };
 
 // --- Опции для UI ---
-const sortOptions = [
-  { label: "Best deals", value: "discount" },
-  { label: "Lower price", value: "price_asc" },
-  { label: "Higher price", value: "price_desc" },
-  { label: "Recommended", value: "recommended" },
-];
+// const sortOptions = [
+//   { label: "Best deals", value: "discount" },
+//   { label: "Lower price", value: "price_asc" },
+//   { label: "Higher price", value: "price_desc" },
+//   { label: "Recommended", value: "recommended" },
+// ];
+const sortOptions = computed(() => [
+  { label: t("booking.sortOptions.bestDeals"), value: "discount" },
+  { label: t("booking.sortOptions.lowerPrice"), value: "price_asc" },
+  { label: t("booking.sortOptions.higherPrice"), value: "price_desc" },
+  { label: t("booking.sortOptions.recommended"), value: "recommended" },
+]);
+const benefits = computed(() => [
+  t("booking.benefits.unlimitedMileage"),
+  t("booking.benefits.basicProtection"),
+  t("booking.benefits.freeCancellation"),
+]);
 
-const benefits = [
-  "Unlimited mileage",
-  "Basic protection included",
-  "Free cancellation up to 48h before pick up",
-];
+const transmissionOptions = computed(() => [
+  { label: t("booking.transmissionOptions.automatic"), value: "A" },
+  { label: t("booking.transmissionOptions.manual"), value: "M" },
+  { label: t("booking.transmissionOptions.both"), value: "both" },
+]);
 
-const transmissionOptions = [
-  { label: "Automatic", value: "A" },
-  { label: "Manual", value: "M" },
-  { label: "Both", value: "both" },
-];
-
-const typeOptions = [
-  { label: "Car", value: "car" },
-  { label: "Vans & Trucks", value: "vans" },
-  { label: "Premium", value: "premium" },
-];
+const typeOptions = computed(() => [
+  { label: t("booking.typeOptions.car"), value: "car" },
+  { label: t("booking.typeOptions.vans"), value: "vans" },
+  { label: t("booking.typeOptions.premium"), value: "premium" },
+]);
 
 // --- Слайдер карточки / fullscreen ---
 const activeSliderId = ref(null);
 const fullscreenCar = ref(null);
 const fullscreenStartIndex = ref(0);
-
+useHead(() => ({
+  htmlAttrs: {
+    class: fullscreenCar.value ? "overflow-y-hidden" : "",
+  },
+}));
 const activateSlider = (car) => {
   if (car.images && car.images.length > 0) {
     activeSliderId.value = car.id;
@@ -188,10 +196,13 @@ const resetFilters = () => {
 
 <template>
   <main class="lg:container lg:mx-auto py-8">
-    <!-- ПАНЕЛЬ ФИЛЬТРОВ (mobile toggle) -->
-    <div class="flex lg:hidden justify-end mb-4 px-4">
+    <!-- ПАНЕЛЬ ФИЛЬТРОВ -->
+    <div
+      v-if="filteredCars.length != 0"
+      class="flex lg:hidden justify-end mb-4 px-4"
+    >
       <UIBtn
-        class="border-2! border-sec! text-sec! transition-colors active:bg-sec/70 px-2"
+        class="border-2 border-sec text-sec! transition-colors active:bg-sec/70 px-2"
         @click="isFiltersOpen = !isFiltersOpen"
       >
         <svg
@@ -208,7 +219,7 @@ const resetFilters = () => {
             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
           />
         </svg>
-        Filters
+        {{ $t("booking.filters") }}
       </UIBtn>
     </div>
 
@@ -225,19 +236,21 @@ const resetFilters = () => {
         <div
           class="lg:flex justify-between items-center mb-6 md:order-3 order-2 lg:order-first ml-auto lg:ml-0 w-fit md:w-auto"
         >
-          <h2 class="hidden lg:block text-xl font-bold">Filters</h2>
+          <h2 class="hidden lg:block text-xl font-bold">
+            {{ $t("booking.filters") }}
+          </h2>
           <UIBtn
             clear
             class="text-sec! font-semibold hover:underline px-4"
             @click="resetFilters"
           >
-            Reset all
+            {{ $t("booking.resetAll") }}
           </UIBtn>
         </div>
 
         <!-- Filter: Transmission -->
         <div class="w-1/2 md:w-1/3 lg:w-auto order-1">
-          <h3 class="font-bold mb-4">Transmission</h3>
+          <h3 class="font-bold mb-4">{{ $t("booking.transmission") }}</h3>
           <div class="flex flex-col gap-3 text-gray-700 text-sm">
             <label
               v-for="option in transmissionOptions"
@@ -258,7 +271,7 @@ const resetFilters = () => {
 
         <!-- Filter: Vehicle Type -->
         <div class="w-full md:w-1/3 lg:w-auto order-2">
-          <h3 class="font-bold mb-4">Vehicle type</h3>
+          <h3 class="font-bold mb-4">{{ $t("booking.vehicleType") }}</h3>
           <div class="flex flex-col gap-3 text-gray-700 text-sm">
             <label
               v-for="option in typeOptions"
@@ -279,7 +292,7 @@ const resetFilters = () => {
 
         <!-- Filter: Seats -->
         <div class="w-full md:w-1/2 lg:w-auto order-3">
-          <h3 class="font-bold mb-4">Seats</h3>
+          <h3 class="font-bold mb-4">{{ $t("booking.seats") }}</h3>
           <div class="relative w-full px-1 text-sm">
             <div
               class="flex justify-between text-xs font-bold text-gray-600 mb-2 relative z-10 pointer-events-none"
@@ -313,7 +326,7 @@ const resetFilters = () => {
 
         <!-- Filter: Price Range -->
         <div class="w-full md:w-1/2 lg:w-auto order-5">
-          <h3 class="font-bold mb-4">Price range</h3>
+          <h3 class="font-bold mb-4">{{ $t("booking.priceRange") }}</h3>
           <div class="flex gap-4 text-sm">
             <div
               class="flex flex-col border border-gray-300 rounded-md p-2 w-full focus-within:border-sec focus-within:ring-1 focus-within:ring-sec transition-all"
@@ -322,7 +335,7 @@ const resetFilters = () => {
                 for="minPrice"
                 class="text-xs text-gray-500 font-medium tracking-wide text-nowrap cursor-pointer"
               >
-                min price
+                {{ $t("order.minPrice") }}
               </label>
               <div class="flex items-center font-bold">
                 <span class="mr-1 text-gray-700">€</span>
@@ -344,7 +357,7 @@ const resetFilters = () => {
                 for="maxPrice"
                 class="text-xs text-gray-500 font-medium tracking-wide text-nowrap cursor-pointer"
               >
-                max price
+                {{ $t("order.maxPrice") }}
               </label>
               <div class="flex items-center font-bold">
                 <span class="mr-1 text-gray-700">€</span>
@@ -363,18 +376,20 @@ const resetFilters = () => {
       </aside>
 
       <!-- СПИСОК КАРТОЧЕК АВТОМОБИЛЕЙ -->
+      <h1 v-if="filteredCars.length != 0">{{ $t("booking.h1") }}</h1>
+
       <div class="flex-1 flex flex-col gap-4">
         <!-- Панель сортировки -->
         <div
           class="hidden lg:flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200"
         >
           <span class="font-bold text-gray-700">
-            {{ filteredCars.length }} cars available
+            {{ filteredCars.length }} {{ $t("booking.carsAvailable") }}
           </span>
 
           <div class="flex items-center gap-3 w-auto">
             <span class="text-sm font-bold text-gray-500 text-nowrap">
-              Sort by
+              {{ $t("booking.sortBy") }}
             </span>
             <UISelect
               id="sortSelect"
@@ -389,7 +404,7 @@ const resetFilters = () => {
           v-if="!filteredCars.length"
           class="text-center py-12 text-xl font-bold text-gray-500 bg-gray-50 rounded-lg border border-gray-200"
         >
-          Sorry, there’s no vehicle.
+          {{ $t("booking.sorryVehicle") }}
         </div>
 
         <!-- Карточка -->
@@ -431,7 +446,7 @@ const resetFilters = () => {
                   class="absolute! top-3 right-3 z-20 bg-black/60 text-white text-xs font-bold px-3 py-2 rounded-bl-none! hover:bg-black/75 transition-colors"
                   @click.stop="openFullscreenSlider(car)"
                 >
-                  Full screen
+                  {{ $t("booking.fullScreen") }}
                 </UIBtn>
               </div>
             </ClientOnly>
@@ -468,7 +483,7 @@ const resetFilters = () => {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                {{ car.images.length }} photos
+                {{ car.images.length }} {{ $t("booking.photos") }}
               </div>
             </div>
           </div>
@@ -483,7 +498,7 @@ const resetFilters = () => {
               <span
                 class="relative group inline-flex items-center gap-2 border border-gray-300 text-xs! font-bold px-3 py-1 rounded-full text-gray-700 uppercase tracking-wide cursor-help"
               >
-                OR SIMILAR {{ car.category.name }}
+                {{ $t("booking.orSimilar") }} {{ car.category.name }}
                 <span
                   class="bg-gray-300 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]"
                 >
@@ -493,8 +508,7 @@ const resetFilters = () => {
                 <div
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-62.5 px-3 py-2 bg-gray-800 text-white text-xs font-normal normal-case text-center rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20 pointer-events-none shadow-lg"
                 >
-                  You'll receive this model or an equivalent vehicle for your
-                  convenience.
+                  {{ $t("booking.receiveModel") }}
                   <div
                     class="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-gray-800"
                   />
@@ -541,7 +555,7 @@ const resetFilters = () => {
               class="font-extrabold transition-colors uppercase w-full"
               @click="handleSelectCar(car)"
             >
-              Select
+              {{ $t("common.select") }}
             </UIBtn>
           </div>
         </div>
@@ -549,10 +563,11 @@ const resetFilters = () => {
     </div>
 
     <!-- Fullscreen галерея -->
+
     <Teleport to="body">
       <div
         v-if="fullscreenCar"
-        class="fixed inset-0 z-30 bg-black/95 flex items-center justify-center p-4"
+        class="fixed inset-0 z-40 bg-black/95 flex items-center justify-center p-4"
         @click.self="closeFullscreenSlider"
       >
         <UIBtn
@@ -560,7 +575,7 @@ const resetFilters = () => {
           class="absolute! top-[10vh] right-4 z-40 text-white border! border-white/20! hover:text-sec! rounded-md px-4 py-2 font-bold transition-colors"
           @click.stop="closeFullscreenSlider"
         >
-          Close
+          {{ t("common.close") }}
         </UIBtn>
 
         <div class="w-full max-w-7xl h-[80vh] relative">

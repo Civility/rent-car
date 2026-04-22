@@ -12,7 +12,7 @@ export interface SuccessRedirectOptions {
 
 export function useSuccessRedirect(options: SuccessRedirectOptions = {}) {
   const { redirectTo = "/", delay = 3500, onBeforeRedirect } = options;
-
+  const localePath = useLocalePath();
   const router = useRouter();
   const isOpen = ref(false);
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -32,7 +32,7 @@ export function useSuccessRedirect(options: SuccessRedirectOptions = {}) {
       await onBeforeRedirect();
     }
 
-    await router.push(redirectTo);
+    await router.push(localePath(redirectTo));
   };
 
   const open = () => {

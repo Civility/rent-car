@@ -13,7 +13,6 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, requiredIf, helpers } from "@vuelidate/validators";
 import { VueDatePicker } from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { el } from "date-fns/locale";
 
 import ICON_STAR from "@/assets/icons/star.svg";
 import ICON_BAG from "@/assets/icons/logo_bag.svg";
@@ -29,9 +28,10 @@ import "swiper/css/effect-fade";
 import { useBookingStore } from "@/store/booking";
 // import { useMainStore } from "@/store/main";
 import { navigateTo } from "#app";
+const { dateLocale } = useDateLocale();
 const { isDesktop } = useDevice();
-// const {   } = useMainStore();
-// const { locations } = storeToRefs(useMainStore());
+const localePath = useLocalePath();
+
 const { setSearchForm, setLocation, setReturnLocation, setDifferentLocation } =
   useBookingStore();
 const { searchForm, locations } = storeToRefs(useBookingStore());
@@ -44,6 +44,25 @@ onMounted(() => {
     "_" +
     Math.random().toString(36).slice(2, 6);
 });
+
+const timeSlots = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = (i % 2) * 30;
+  const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  return { value: `${h}:${m}`, label };
+});
+
+const timeToValue = (t) => {
+  if (!t || typeof t !== "object") return null;
+  return `${t.hours}:${t.minutes}`;
+};
+
+const valueToTime = (v) => {
+  if (!v) return null;
+  const [h, m] = v.split(":").map(Number);
+  return { hours: h, minutes: m, seconds: 0 };
+};
+
 // slider
 const slider = [
   "intro-photo-1",
@@ -73,40 +92,61 @@ const trapValue = ref("");
 const isConsent = ref(false); // Локальный чекбокс-ловушка
 
 const form = computed(() => searchForm.value);
-
+const { t } = useI18n();
 const rules = {
   location: { required },
   returnLocation: {
     required: requiredIf(() => !form.value.differentLocation),
   },
-  dateFrom: { required: helpers.withMessage("Select start date", required) },
-  timeFrom: { required: helpers.withMessage("Select pickup time", required) },
-  dateTo: { required: helpers.withMessage("Select return date", required) },
+  dateFrom: {
+    required: helpers.withMessage(
+      () => t("validation.selectStartDate"),
+      required,
+    ),
+  },
+  timeFrom: {
+    required: helpers.withMessage(
+      () => t("validation.selectPickupTime"),
+      required,
+    ),
+  },
+  dateTo: {
+    required: helpers.withMessage(
+      () => t("validation.selectReturnDate"),
+      required,
+    ),
+  },
   timeTo: {
-    required: helpers.withMessage("Select return time", required),
-    validRange: helpers.withMessage("Min period is 1 hour", () => {
-      if (!form.value) return true;
-      if (
-        !form.value.dateFrom ||
-        !form.value.timeFrom ||
-        !form.value.dateTo ||
-        !form.value.timeTo
-      )
-        return true;
+    required: helpers.withMessage(
+      () => t("validation.selectReturnTime"),
+      required,
+    ),
+    validRange: helpers.withMessage(
+      () => t("validation.minPeriodOneHour"),
+      () => {
+        if (!form.value) return true;
+        if (
+          !form.value.dateFrom ||
+          !form.value.timeFrom ||
+          !form.value.dateTo ||
+          !form.value.timeTo
+        )
+          return true;
 
-      const fromDate = formatDate(form.value.dateFrom);
-      const toDate = formatDate(form.value.dateTo);
-      const fromTime = formatTime(form.value.timeFrom);
-      const toTime = formatTime(form.value.timeTo);
+        const fromDate = formatDate(form.value.dateFrom);
+        const toDate = formatDate(form.value.dateTo);
+        const fromTime = formatTime(form.value.timeFrom);
+        const toTime = formatTime(form.value.timeTo);
 
-      if (!fromDate || !toDate || !fromTime || !toTime) return true;
+        if (!fromDate || !toDate || !fromTime || !toTime) return true;
 
-      const from = parseISO(`${fromDate}T${fromTime}:00`);
-      const to = parseISO(`${toDate}T${toTime}:00`);
+        const from = parseISO(`${fromDate}T${fromTime}:00`);
+        const to = parseISO(`${toDate}T${toTime}:00`);
 
-      if (!isValid(from) || !isValid(to)) return true;
-      return differenceInHours(to, from) >= 1;
-    }),
+        if (!isValid(from) || !isValid(to)) return true;
+        return differenceInHours(to, from) >= 1;
+      },
+    ),
   },
 };
 
@@ -187,7 +227,7 @@ const handleSubmit = async () => {
     formattedDateTo: getDateTime(form.value.dateTo, form.value.timeTo),
   });
 
-  await navigateTo("/booking");
+  await navigateTo(localePath("/booking"));
 };
 </script>
 
@@ -197,12 +237,14 @@ const handleSubmit = async () => {
       <img
         src="@/assets/webp/intro-bg.webp"
         alt="Background"
+        aria-hidden="true"
         class="h-full w-full object-cover object-center"
       />
     </div>
     <img
       src="@/assets/webp/intro-leaf.webp"
       alt="leaf"
+      aria-hidden="true"
       class="h-auto lg:w-[20%] w-fit object-cover object-center absolute -bottom-1/5 lg:-bottom-1/4 -left-[5%] z-20 -rotate-15 animate-leaf-orbit"
     />
     <div
@@ -214,7 +256,7 @@ const handleSubmit = async () => {
         <h1
           class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight"
         >
-          Affordable cars in Rent
+          {{ $t("hero.title") }}
           <strong
             class="relative inline-grid place-items-center lg:text-4xl text-lg sm:text-2xl align-middle ml-2"
           >
@@ -227,7 +269,7 @@ const handleSubmit = async () => {
         </h1>
 
         <p class="text-lg opacity-90 font-semibold lg:block hidden">
-          Comfort for your travels and business trips!
+          {{ $t("hero.subtitle") }}
         </p>
       </div>
 
@@ -238,6 +280,7 @@ const handleSubmit = async () => {
           <img
             src="@/assets/webp/leaf-1.webp"
             alt="leaf-1"
+            aria-hidden="true"
             class="object-cover w-40 h-30 absolute lg:right-3 left-0 lg:left-auto lg:bottom-7 bottom-auto pointer-events-none z-10 animate-leaf-orbit"
           />
 
@@ -257,6 +300,7 @@ const handleSubmit = async () => {
                 <img
                   :src="IMG(img)"
                   :alt="img"
+                  aria-hidden="true"
                   class="w-full h-full object-cover select-none"
                 />
               </SwiperSlide>
@@ -264,11 +308,14 @@ const handleSubmit = async () => {
           </ClientOnly>
           <img
             src="@/assets/webp/intro-photo-8.webp"
+            aria-hidden="true"
+            alt="Rental car available in Thessaloniki"
             class="hidden lg:block rounded-4xl border-2 border-white/90 shadow-lg object-cover w-fit"
           />
           <img
             src="@/assets/webp/leaf-2.webp"
-            alt="leaf-2"
+            aria-hidden="true"
+            alt="Rental car"
             class="object-cover absolute lg:left-20 right-0 lg:-bottom-14 bottom-5 pointer-events-none z-10 animate-leaf-orbit-reverse"
           />
         </div>
@@ -320,7 +367,7 @@ const handleSubmit = async () => {
                 id="label-location"
                 class="block text-lg font-bold mb-1 text-zinc-900"
               >
-                Pick Up
+                {{ $t("hero.pickUp") }}
               </span>
 
               <div class="relative">
@@ -340,7 +387,7 @@ const handleSubmit = async () => {
                     name="location"
                     aria-labelledby="label-location"
                     :options="locations"
-                    placeholder="Select location"
+                    :placeholder="$t('hero.selectLocation')"
                     @update:model-value="setLocation"
                   />
                 </div>
@@ -367,9 +414,9 @@ const handleSubmit = async () => {
                 @change="setDifferentLocation($event.target.checked)"
               />
 
-              <span class="text-zinc-800 font-semibold"
-                >Same return location</span
-              >
+              <span class="text-zinc-800 font-semibold">{{
+                $t("hero.sameReturn")
+              }}</span>
             </label>
 
             <transition name="fade-slide">
@@ -378,7 +425,7 @@ const handleSubmit = async () => {
                   id="label-returnLocation"
                   class="block text-lg font-bold mb-1 text-zinc-900"
                 >
-                  Return To
+                  {{ $t("hero.returnTo") }}
                 </span>
 
                 <div class="relative">
@@ -398,7 +445,7 @@ const handleSubmit = async () => {
                       :model-value="form.returnLocation"
                       name="returnLocation"
                       :options="locations"
-                      placeholder="Select return location"
+                      :placeholder="$t('hero.selectReturnLocation')"
                       @update:model-value="setReturnLocation"
                     />
                   </div>
@@ -416,7 +463,7 @@ const handleSubmit = async () => {
             <div class="grid grid-cols-1 gap-4">
               <div class="relative">
                 <span class="block text-lg font-bold mb-1 text-zinc-900"
-                  >Pickup date and time
+                  >{{ $t("hero.pickupDateTime") }}
                 </span>
                 <div
                   class="relative flex md:flex-nowrap flex-wrap gap-2 w-full"
@@ -427,7 +474,7 @@ const handleSubmit = async () => {
                         v-model="form.dateFrom"
                         :min-date="new Date()"
                         :time-config="{ enableTimePicker: false }"
-                        placeholder="Pickup date"
+                        :placeholder="$t('hero.pickupDate')"
                         disable-year-select
                         :is-24="true"
                         auto-apply
@@ -442,8 +489,8 @@ const handleSubmit = async () => {
                             v$.dateFrom.$error ? '!border-red-400' : '',
                           ],
                         }"
-                        :format-locale="el"
-                        :locale="el"
+                        :format-locale="dateLocale"
+                        :locale="dateLocale"
                       />
                       <p
                         v-for="error in v$.dateFrom.$errors"
@@ -454,29 +501,26 @@ const handleSubmit = async () => {
                       </p>
                     </div>
                     <div class="relative w-full">
-                      <VueDatePicker
-                        v-model="form.timeFrom"
-                        time-picker
-                        :is-24="true"
-                        :minutes-increment="30"
-                        placeholder="Time"
-                        :hide-input-icon="true"
-                        :input-attrs="{
-                          id: 'timeFrom',
-                          name: 'timeFrom',
-                          autocomplete: 'off',
-                        }"
-                        :ui="{
-                          input: [
-                            'rounded-xl! h-10',
-                            v$.timeFrom.$error ? '!border-red-400' : '',
-                          ],
+                      <UISvg
+                        :svg="ICON_TIME"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 w-5! h-auto! text-zinc-400 z-10 pointer-events-none"
+                      />
+                      <div
+                        :class="{
+                          'ring-2 ring-red-400 rounded-xl': v$.timeFrom.$error,
                         }"
                       >
-                        <template #input-icon>
-                          <UISvg :svg="ICON_TIME" class="pl-2" />
-                        </template>
-                      </VueDatePicker>
+                        <UISelect
+                          id="timeFrom"
+                          :model-value="timeToValue(form.timeFrom)"
+                          :options="timeSlots"
+                          placeholder="Time"
+                          class="[&_.ui-select>div]:pl-8! [&_.max-h-60]:max-h-40!"
+                          @update:model-value="
+                            (v) => setSearchForm({ timeFrom: valueToTime(v) })
+                          "
+                        />
+                      </div>
                       <p
                         v-for="error in v$.timeFrom.$errors"
                         :key="error.$uid"
@@ -484,8 +528,8 @@ const handleSubmit = async () => {
                       >
                         {{ error.$message }}
                       </p>
-                    </div></ClientOnly
-                  >
+                    </div>
+                  </ClientOnly>
                 </div>
               </div>
 
@@ -493,7 +537,7 @@ const handleSubmit = async () => {
                 <span
                   id="label-dateTo"
                   class="block text-lg font-bold mb-1 text-zinc-900"
-                  >Return date and time</span
+                  >{{ $t("hero.returnDateTime") }}</span
                 >
                 <div
                   class="relative flex md:flex-nowrap flex-wrap gap-2 w-full"
@@ -505,7 +549,7 @@ const handleSubmit = async () => {
                         :min-date="form.dateFrom || new Date()"
                         auto-apply
                         :time-config="{ enableTimePicker: false }"
-                        placeholder="Return date"
+                        :placeholder="$t('hero.returnDate')"
                         disable-year-select
                         :is-24="true"
                         :input-attrs="{
@@ -519,8 +563,8 @@ const handleSubmit = async () => {
                             v$.dateTo.$error ? '!border-red-400' : '',
                           ],
                         }"
-                        :format-locale="el"
-                        :locale="el"
+                        :format-locale="dateLocale"
+                        :locale="dateLocale"
                       />
                       <p
                         v-for="error in v$.dateTo.$errors"
@@ -531,30 +575,26 @@ const handleSubmit = async () => {
                       </p>
                     </div>
                     <div class="relative w-full">
-                      <VueDatePicker
-                        v-model="form.timeTo"
-                        time-picker
-                        :is-24="true"
-                        :minutes-increment="30"
-                        :min-time="minTimeTo"
-                        placeholder="Time"
-                        :hide-input-icon="true"
-                        :input-attrs="{
-                          id: 'timeTo',
-                          name: 'timeTo',
-                          autocomplete: 'off',
-                        }"
-                        :ui="{
-                          input: [
-                            'rounded-xl! h-10',
-                            v$.timeTo.$error ? '!border-red-400' : '',
-                          ],
+                      <UISvg
+                        :svg="ICON_TIME"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 w-5! h-auto! text-zinc-400 z-10 pointer-events-none"
+                      />
+                      <div
+                        :class="{
+                          'ring-2 ring-red-400 rounded-xl': v$.timeTo.$error,
                         }"
                       >
-                        <template #input-icon>
-                          <UISvg :svg="ICON_TIME" class="pl-2" />
-                        </template>
-                      </VueDatePicker>
+                        <UISelect
+                          id="timeTo"
+                          :model-value="timeToValue(form.timeTo)"
+                          :options="timeSlots"
+                          :placeholder="$t('common.time')"
+                          class="[&_.ui-select>div]:pl-8! [&_.max-h-60]:max-h-40!"
+                          @update:model-value="
+                            (v) => setSearchForm({ timeTo: valueToTime(v) })
+                          "
+                        />
+                      </div>
                       <p
                         v-for="error in v$.timeTo.$errors"
                         :key="error.$uid"
@@ -578,14 +618,14 @@ const handleSubmit = async () => {
                   'opacity-50 bg-zinc-500! cursor-not-allowed': isFormDisabled,
                 }"
               >
-                Show Car
+                {{ $t("hero.showCar") }}
               </UIBtn>
 
               <div
                 v-if="isFormDisabled"
                 class="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-white text-sm font-semibold py-2 px-4 rounded-lg pointer-events-none whitespace-nowrap z-50 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-zinc-800"
               >
-                Please fill in the fields
+                {{ $t("hero.fillFields") }}
               </div>
             </div>
           </form>

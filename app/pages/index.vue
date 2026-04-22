@@ -1,7 +1,47 @@
 <script setup>
 import { useBookingStore } from "@/store/booking";
-useScrollSpy();
+
+const config = useRuntimeConfig();
+const localePath = useLocalePath();
+const { t } = useI18n();
+useSeoMeta({
+  title: t("seo.title"),
+  description: t("seo.description"),
+  ogTitle: t("seo.title"),
+  ogDescription: t("seo.description"),
+  ogType: "website",
+  ogUrl: config.public.siteURL,
+  ogImage: `${config.public.siteURL}/map.jpg`,
+  twitterCard: "summary_large_image",
+  twitterTitle: t("seo.title"),
+  twitterDescription: t("seo.description"),
+  twitterImage: `${config.public.siteURL}/map.jpg`,
+});
+useSchemaOrg([
+  {
+    "@type": "AutoRental",
+    "@id": `${config.public.siteURL}/#business`,
+    name: config.public.siteName,
+    url: config.public.siteURL,
+    image: `${config.public.siteURL}/map.jpg`,
+    telephone: "+30 697 779 5840",
+    email: "info@rent-me.gr",
+    priceRange: "$",
+    paymentAccepted: "Cash, VISA, MasterCard, Maestro, PayPal",
+    areaServed: ["Thessaloniki", "Lagadas"],
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Lagina-Lagadas-Thessaloniki",
+      addressLocality: "Thessaloniki",
+      postalCode: "57200",
+      addressCountry: "GR",
+    },
+    sameAs: ["https://www.facebook.com/profile.php?id=100093357895988"],
+  },
+]);
 const { fetchLocations } = useBookingStore();
+useScrollSpy();
+
 onMounted(async () => {
   await fetchLocations();
 });
@@ -18,6 +58,7 @@ onMounted(async () => {
       <img
         src="@/assets/webp/floating-image.webp"
         alt="floating"
+        aria-hidden="true"
         class="absolute bottom-5 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10 scale-350"
       />
       <div class="relative w-14 h-14">
@@ -32,12 +73,12 @@ onMounted(async () => {
         />
 
         <NuxtLink
-          to="/#findCar"
+          :to="localePath('/') + '#findCar'"
           class="absolute inset-0 flex items-center justify-center rounded-full bg-main text-white uppercase font-bold text-xs leading-tight overflow-hidden shadow-lg"
         >
           <span class="relative z-10 flex flex-col items-center text-center">
-            <span>Find</span>
-            <span>car</span>
+            <span>{{ $t("common.find") }}</span>
+            <span>{{ $t("common.car") }}</span>
           </span>
         </NuxtLink>
       </div>

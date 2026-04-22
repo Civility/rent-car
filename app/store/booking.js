@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { buildOrderPayload } from "@/composables/buildOrderPayload";
 import { useBookingDates } from "@/composables/useBookingDates";
 import { useMainStore } from "./main.js";
-
+const STORAGE_KEY = "booking-search";
 const createDefaultSearchForm = () => ({
   location: "SKG",
   differentLocation: true,
@@ -16,14 +16,29 @@ const createDefaultSearchForm = () => ({
   formattedDateFrom: undefined,
   formattedDateTo: undefined,
 });
-
+const loadFromSession = () => {
+  if (import.meta.server) return null;
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+const saveToSession = (searchForm) => {
+  if (import.meta.server) return;
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(searchForm));
+  } catch {}
+};
 export const useBookingStore = defineStore("booking", {
   state: () => ({
     searchForm: {
       ...createDefaultSearchForm(),
       // Стартовые даты для dev-удобства. Можно убрать в проде.
-      dateFrom: "Mon Apr 27 2026 14:45:00 GMT+0300",
-      dateTo: "Thu Apr 30 2026 14:45:00 GMT+0300",
+      // dateFrom: "Mon Apr 27 2026 14:45:00 GMT+0300",
+      // dateTo: "Thu Apr 30 2026 14:45:00 GMT+0300",
+      ...(loadFromSession() || {}),
     },
     locations: [],
     cars: [],
@@ -73,8 +88,8 @@ export const useBookingStore = defineStore("booking", {
       try {
         const response = await $fetch(getApiUrl("/api/cars"), {
           query: {
-            date_from: this.searchForm.dateFrom,
-            date_to: this.searchForm.dateTo,
+            date_from: this.searchForm.formattedDateFrom,
+            date_to: this.searchForm.formattedDateTo,
           },
         });
         this.cars = response;
@@ -146,11 +161,15 @@ export const useBookingStore = defineStore("booking", {
     setSearchForm(payload) {
       Object.assign(this.searchForm, payload, { lastActive: Date.now() });
     },
-
+    setSearchForm(payload) {
+      Object.assign(this.searchForm, payload, { lastActive: Date.now() });
+      saveToSession(this.searchForm);
+    },
     $reset() {
       Object.assign(this.searchForm, createDefaultSearchForm());
       this.orderError = null;
       this.orderSuccess = false;
+      saveToSession(this.searchForm);
     },
   },
 });

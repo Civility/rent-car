@@ -3,7 +3,8 @@ import ICON_VIBER from "@/assets/icons/viber.svg";
 import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
 import ICON_FACEBOOK from "@/assets/icons/facebook.svg";
 // const { isMobile, isDesktop } = useDevice();
-
+const { t } = useI18n();
+const localePath = useLocalePath();
 const isMenuOpen = ref(false);
 useHead(() => ({
   htmlAttrs: {
@@ -11,13 +12,13 @@ useHead(() => ({
   },
 }));
 
-const menuItems = [
-  { name: "Home", id: "home" },
-  { name: "About us", id: "about" },
-  { name: "Rental terms", id: "terms" },
-  { name: "FAQ", id: "faq" },
-  { name: "Contact us", id: "contacts" },
-];
+const menuItems = computed(() => [
+  { name: t("nav.home"), id: "home" },
+  { name: t("nav.about"), id: "about" },
+  { name: t("nav.terms"), id: "terms" },
+  { name: t("nav.faq"), id: "faq" },
+  { name: t("nav.contacts"), id: "contacts" },
+]);
 </script>
 <template>
   <header
@@ -33,7 +34,7 @@ const menuItems = [
     >
       <ClientOnly
         ><NuxtLink
-          to="/"
+          :to="localePath('/')"
           class="flex items-center gap-2 self-start z-60 relative"
         >
           <PartLogo
@@ -64,7 +65,9 @@ const menuItems = [
         <address
           class="mt-auto pb-10 pt-8 border-t lg:border-zinc-800 border-zinc-200 not-italic lg:hidden"
         >
-          <p class="text-zinc-300 font-bold text-md mb-2">Contacts</p>
+          <p class="text-zinc-300 font-bold text-md mb-2">
+            {{ t("contacts.title") }}
+          </p>
 
           <div class="flex flex-col mb-4">
             <a
@@ -121,6 +124,7 @@ const menuItems = [
       <div
         class="flex items-center gap-4 z-60 self-start pt-4 absolute right-0"
       >
+        <PartLangSwitcher />
         <UIBtn
           clear
           class="lg:hidden! p-4! text-white hover:bg-white/10 rounded-xl transition-colors active:scale-90"

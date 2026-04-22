@@ -1,4 +1,5 @@
 <script setup>
+const { t } = useI18n();
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -155,7 +156,9 @@ const handleBackdropClick = () => {
           </div>
 
           <div class="mt-6 flex justify-end gap-3">
-            <UIBtn sec class="px-5" @click="closeModal"> Close </UIBtn>
+            <UIBtn sec class="px-5" @click="closeModal">
+              {{ t("common.close") }}
+            </UIBtn>
 
             <UIBtn
               v-if="buttonText"

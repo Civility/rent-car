@@ -1,0 +1,349 @@
+{
+  "common": {
+    "time": "Uhrzeit",
+    "find": "Auto",
+    "car": "finden",
+    "close": "Schließen",
+    "select": "Auswählen",
+    "nav": {
+      "chooseDates": "Datum auswählen",
+      "chooseCar": "Auto auswählen",
+      "driverDetails": "Fahrerdetails"
+    },
+    "features": {
+      "seats": "Sitze",
+      "doors": "Türen",
+      "bags": "Taschen",
+      "transmission": {
+        "A": "Automatikgetriebe",
+        "M": "Schaltgetriebe"
+      },
+      "ac": "Klimaanlage",
+      "age": "Mindestalter"
+    }
+  },
+  "nav": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "terms": "Mietbedingungen",
+    "faq": "FAQ",
+    "contacts": "Kontakt"
+  },
+  "hero": {
+    "title": "Günstige Mietwagen bei Rent",
+    "subtitle": "Komfort für Ihre Reisen und Geschäftsfahrten!",
+    "pickUp": "Abholung",
+    "returnTo": "Rückgabe",
+    "sameReturn": "Gleicher Rückgabeort",
+    "pickupDate": "Abholdatum",
+    "returnDate": "Rückgabedatum",
+    "pickupDateTime": "Datum und Uhrzeit der Abholung",
+    "returnDateTime": "Datum und Uhrzeit der Rückgabe",
+    "showCar": "Autos anzeigen",
+    "fillFields": "Bitte füllen Sie die Felder aus",
+    "selectLocation": "Ort auswählen",
+    "selectReturnLocation": "Rückgabeort auswählen"
+  },
+  "validation": {
+    "selectStartDate": "Startdatum auswählen",
+    "selectPickupTime": "Abholzeit auswählen",
+    "selectReturnDate": "Rückgabedatum auswählen",
+    "selectReturnTime": "Rückgabezeit auswählen",
+    "minPeriodOneHour": "Die Mindestdauer beträgt 1 Stunde"
+  },
+  "about": {
+    "title": "Über uns",
+    "items": [
+      {
+        "alt": "Rent-Me Autovermietung in Thessaloniki",
+        "text": "Rent Me ist ein Autovermietungsservice, der jede Reise oder Geschäftsreise komfortabler und kostengünstiger macht."
+      },
+      {
+        "alt": "Saubere und gepflegte Mietwagen zur sofortigen Buchung",
+        "text": "Rent Me bietet eine große Auswahl an Fahrzeugen, die regelmäßig gewartet und gereinigt werden."
+      },
+      {
+        "alt": "Rent-Me Fahrzeugvermietung und Fahrzeugverkauf",
+        "text": "Zusätzlich bietet Rent Me auch den Verkauf von Fahrzeugen an."
+      }
+    ]
+  },
+  "benefits": {
+    "title0": "Warum",
+    "title": " Rent Me wählen?",
+    "items": [
+      {
+        "title": "Auswahl",
+        "text": "Große Auswahl an Fahrzeugen zur Miete und zum Verkauf."
+      },
+      {
+        "title": "Qualität",
+        "text": "Professionelle Fahrzeugwartung."
+      },
+      {
+        "title": "Schnelligkeit",
+        "text": "Schneller und einfacher Mietvorgang."
+      },
+      {
+        "title": "Erschwinglichkeit",
+        "text": "Optimale Preisangebote."
+      },
+      {
+        "title": "Service",
+        "text": "Kontinuierliche Kundenbetreuung."
+      },
+      {
+        "title": "Zusatzleistungen",
+        "text": "Optionale zusätzliche Leistungen."
+      }
+    ]
+  },
+  "terms": {
+    "title0": "Mietwagen",
+    "title": " Bedingungen",
+    "intro": "Bitte machen Sie sich mit den Mietbedingungen von Rent Me vertraut, damit Ihre Erfahrung mit unserem Service so angenehm wie möglich ist.",
+    "rules": [
+      "Um ein Auto zu mieten, müssen Dokumente zur Bestätigung Ihrer Identität vorgelegt werden. Fahrzeuge werden an Personen vermietet, die das 23. Lebensjahr vollendet haben. Die Mindestfahrerfahrung beträgt 3 Jahre.",
+      "Für Fahrer über 70 Jahre werden keine Versicherungspakete angeboten.",
+      "Sie können die Autovermietung bar oder mit Kreditkarte bezahlen. Alle Preise verstehen sich inklusive Mehrwertsteuer.",
+      "Bei der Anmietung erhalten Sie das Fahrzeug mit vollem Tank. Am Ende der Mietdauer muss das Auto mit demselben Kraftstoffstand zurückgegeben werden.",
+      "Falls Sie die Mietdauer verlängern möchten, müssen Sie den Vertreter von Rent Me spätestens einen Tag vor dem im Vertrag angegebenen Mietende informieren.",
+      "Kunden, die das Fahrzeug vor Ablauf der Mietdauer zurückgeben, erhalten keine Rückerstattung der restlichen Kosten. Bei Langzeitmieten ab 7 Tagen werden 50 % der ungenutzten Mietkosten zurückerstattet.",
+      "Parkgebühren und Bußgelder, die während der Mietzeit anfallen, liegen in der Verantwortung des Mieters.",
+      "Wenn Sie den Schlüssel des gemieteten Fahrzeugs verlieren, müssen Sie die Kosten dafür erstatten.",
+      "Die Lieferung des Fahrzeugs an einen von Ihnen gewählten Ort wird gesondert berechnet.",
+      "Bei verspäteter Rückgabe des Fahrzeugs behält sich das Unternehmen das Recht vor, für jede Stunde oder jeden Tag der Verspätung eine Strafe zu berechnen."
+    ]
+  },
+  "faq": {
+    "title0": "Häufig gestellte",
+    "title": " Fragen",
+    "items": [
+      {
+        "title": "Wie buche ich ein Auto?",
+        "text": "<p>Nutzen Sie das praktische Formular auf der <strong> Startseite </strong> von Rent Me. Wählen Sie das gewünschte Fahrzeugmodell und den Mietzeitraum. Senden Sie die ausgefüllte Anfrage ab und warten Sie auf die Buchungsbestätigung. Unser Manager wird Sie kontaktieren, um die Details zu bestätigen.</p>"
+      },
+      {
+        "title": "Ist Kraftstoff im Mietwagen enthalten?",
+        "text": "<p>Alle Fahrzeuge werden mit vollem Tank vermietet. Bitte beachten Sie, dass Sie das Fahrzeug am Ende der Mietzeit mit demselben Kraftstoffstand zurückgeben müssen.</p>"
+      },
+      {
+        "title": "Gibt es ein Kilometerlimit während der Mietdauer?",
+        "text": "<p>Es gibt kein Kilometerlimit.</p>"
+      },
+      {
+        "title": "Wie kann ich mehrere Fahrzeuge gleichzeitig mieten?",
+        "text": "<p>Bei der Online-Buchung können Sie nur ein Fahrzeug reservieren. Wenn Sie jedoch mit einer größeren Gruppe reisen, können Sie mehrere Fahrzeuge buchen, indem Sie unseren Manager im Voraus informieren. Bitte beachten Sie, dass für jedes gemietete Fahrzeug ein separater Fahrer mit entsprechendem Führerschein erforderlich ist.</p>"
+      },
+      {
+        "title": "Welche zusätzlichen Leistungen bieten Sie an?",
+        "text": "<p>Sie können folgende Zusatzleistungen anfordern:</p> <ul class='list-disc list-inside'><li>Kindersitz (kostenlos auf Anfrage)</li><li>GPS-Navigationssystem</li><li>Eintragung eines zweiten Fahrers</li><li>Fahrzeuglieferung an den von Ihnen angegebenen Ort</li></ul><p>Sie können zusätzliche Leistungen während des Buchungsvorgangs, im Gespräch mit einem Manager oder direkt in unserem Büro bestellen.</p><p>Außerdem bieten wir auf Kundenwunsch den Verkauf von Fahrzeugen an.</p>"
+      },
+      {
+        "title": "Kann ich den Ort für Abholung oder Rückgabe des Fahrzeugs wählen?",
+        "text": "<p>Ja, das können Sie. Bitte geben Sie den gewünschten Ort bei der Online-Buchung oder im Gespräch mit dem Manager an.</p>"
+      },
+      {
+        "title": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "text": "<p>Bei Rent Me können Sie die Autovermietung bar, mit VISA-, MasterCard- und Maestro-Bankkarten sowie über den Online-Zahlungsdienst PayPal bezahlen.</p>"
+      },
+      {
+        "title": "Kann ich ein Auto nur für ein paar Stunden mieten?",
+        "text": "<p>Bei Rent Me können Sie ein Auto sogar nur für eine Stunde mieten. Sie müssen jedoch trotzdem den Mindestmietzeitraum bezahlen, der einem ganzen Tag entspricht.</p>"
+      },
+      {
+        "title": "Wie wähle ich ein bestimmtes Fahrzeugmodell aus?",
+        "text": "<p>Während des Buchungsvorgangs können Sie das genaue Modell angeben — genau dieses Auto erhalten Sie.</p>"
+      },
+      {
+        "title": "Welche Dokumente muss ich vorlegen?",
+        "text": "<p>Um ein Auto zu mieten, müssen Sie Ihren Reisepass und einen internationalen oder nationalen Führerschein vorlegen. Bitte beachten Sie, dass der Fahrer zum Zeitpunkt der Anmietung mindestens 23 Jahre alt sein muss. Außerdem sind mindestens 3 Jahre Fahrpraxis erforderlich.</p>"
+      },
+      {
+        "title": "Ich möchte Änderungen an meiner Reservierung vornehmen. Wie geht das?",
+        "text": "<p>Bitte schreiben Sie unserem Kundensupport an <a href='mailto:rentme{'@'}gmail.com'>rentme{'@'}gmail.com</a> oder rufen Sie an unter <a href='tel:+305698965677' target='_blank' rel='noreferrer noopener'>+305698965677</a>. Unsere Spezialisten prüfen Ihre Anfrage und nehmen, falls möglich, Änderungen an Ihrer Reservierung vor.</p>"
+      },
+      {
+        "title": "Welcher Kraftstoff muss zum Tanken des Mietwagens verwendet werden?",
+        "text": "<p>Informationen über die verwendete Kraftstoffart finden Sie im Mietvertrag. Falls Sie versehentlich den falschen Kraftstoff tanken, wenden Sie sich bitte sofort an den Kundensupport von Rent Me.</p>"
+      },
+      {
+        "title": "Ich glaube, ich habe mich verfahren...",
+        "text": "<p>Keine Sorge! Auf Wunsch des Kunden stellen wir eine Karte der Umgebung und ein GPS-Navigationsgerät zur Verfügung. Wenn Sie den Weg trotzdem nicht finden, rufen Sie bitte unsere Hotline an. Unsere Mitarbeiter helfen Ihnen dabei, den gewünschten Ort zu erreichen.</p>"
+      },
+      {
+        "title": "Kann ich die Kontrolle über das Fahrzeug an Dritte übertragen?",
+        "text": "<p>Nur wenn Sie bei Abschluss des Mietvertrags einen zusätzlichen Fahrer eingetragen haben. Andernfalls darf das Fahrzeug nur von der Person gefahren werden, die einen gültigen Führerschein vorlegt und den Mietvertrag mit Rent Me unterzeichnet.</p>"
+      },
+      {
+        "title": "Wie kann ich die Mietdauer verlängern?",
+        "text": "<p>Wenn Sie bereits ein Fahrzeug gemietet haben und die Mietdauer verlängern möchten, rufen Sie bitte unsere Hotline an oder besuchen Sie direkt das Büro von Rent Me, mindestens 24 Stunden vor Ablauf der Mietzeit.</p>"
+      },
+      {
+        "title": "Was soll ich in Notsituationen tun (Panne, Fahrzeugdiebstahl, Verkehrsunfall)? ",
+        "text": "<p>Kontaktieren Sie so schnell wie möglich unseren Support unter <a href='tel:+305698965677' target='_blank' rel='noreferrer noopener'>+305698965677</a>.</p><p>Im Falle eines Verkehrsunfalls rufen Sie bitte zusätzlich die Notdienste an:</p><ul class='list-disc list-inside'><li><a href='tel:112' target='_blank' rel='noreferrer noopener'>Polizei: 112</a>  (oder 100)</li><li> <a href='tel:116' target='_blank' rel='noreferrer noopener'>Krankenwagen: 166</a></li></ul><p>Nachdem Sie unsere Hotline kontaktiert haben, warten Sie bitte auf die Ankunft eines Rent Me-Mitarbeiters, der Sie über die weiteren Schritte informiert.</p>"
+      }
+    ]
+  },
+  "contacts": {
+    "title": "Kontakt",
+    "subtitle": "Kontaktieren Sie uns auf jede für Sie bequeme Weise",
+    "callback": "Rufen Sie mich zurück",
+    "leaveDetails0": "Hinterlassen Sie Ihre Kontaktdaten.",
+    "leaveDetails": "Unsere Manager werden Sie in Kürze kontaktieren.",
+    "fields": {
+      "name": "Name",
+      "email": "E-Mail-Adresse",
+      "phone": "Telefonnummer",
+      "message": "Ihre Nachricht",
+      "send": "Senden"
+    },
+    "validations": [
+      {
+        "required": "Name ist erforderlich",
+        "minLength": "Mindestens 2 Zeichen",
+        "maxLength": "Maximal 32 Zeichen",
+        "lettersOnly": "Der Name darf nur Buchstaben enthalten"
+      },
+      {
+        "required": "E-Mail ist erforderlich",
+        "email": "Ungültige E-Mail-Adresse"
+      },
+      {
+        "required": "Telefonnummer ist erforderlich",
+        "minLength": "Die Telefonnummer ist unvollständig"
+      },
+      {
+        "required": "Nachricht ist erforderlich",
+        "minLength": "Mindestens 6 Zeichen",
+        "minTwoWords": "Die Nachricht muss mindestens 2 Wörter enthalten",
+        "noLinksOrHtml": "Links und HTML-Tags sind nicht erlaubt"
+      }
+    ],
+    "resultError": "Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "formLabelConsent": "Ich stimme der Datenverarbeitung zu",
+    "formLabelWebsite": "Leer lassen",
+    "modal": {
+      "title": "Ihre Nachricht wurde erfolgreich gesendet.",
+      "note": "Vielen Dank! Unsere Manager werden Sie in Kürze kontaktieren."
+    }
+  },
+  "booking": {
+    "h1": "Wählen Sie Ihr Mietfahrzeug",
+    "carsAvailable": "Fahrzeuge verfügbar",
+    "sortBy": "Sortieren nach",
+    "sorryVehicle": "Leider ist kein Fahrzeug verfügbar.",
+    "fullScreen": "Vollbild",
+    "photos": "Fotos",
+    "orSimilar": "ODER ÄHNLICH",
+    "receiveModel": "Sie erhalten dieses Modell oder ein gleichwertiges Fahrzeug zu Ihrer Bequemlichkeit.",
+    "filters": "Filter",
+    "resetAll": "Alles zurücksetzen",
+    "transmission": "Getriebe",
+    "vehicleType": "Fahrzeugtyp",
+    "seats": "Sitze",
+    "priceRange": "Preisspanne",
+    "sortOptions": {
+      "bestDeals": "Beste Angebote",
+      "lowerPrice": "Niedriger Preis",
+      "higherPrice": "Höherer Preis",
+      "recommended": "Empfohlen"
+    },
+    "benefits": {
+      "unlimitedMileage": "Unbegrenzte Kilometer",
+      "basicProtection": "Grundschutz inklusive",
+      "freeCancellation": "Kostenlose Stornierung bis 48 Std. vor Abholung"
+    },
+    "transmissionOptions": {
+      "automatic": "Automatik",
+      "manual": "Manuell",
+      "both": "Beide"
+    },
+    "typeOptions": {
+      "car": "Auto",
+      "vans": "Transporter & LKW",
+      "premium": "Premium"
+    }
+  },
+  "order": {
+    "h1": "Fahrerdaten",
+    "pickUp": "Abholung",
+    "dropOff": "Rückgabe",
+    "from": "Von",
+    "to": "Bis",
+    "rentalPriod": "Mietzeitraum",
+    "day": "tage",
+    "noCarSelected": "Derzeit sind keine Fahrzeuge verfügbar",
+    "modal": {
+      "title": "Ihre Anfrage wurde erfolgreich gesendet.",
+      "note": "Unser Manager wird Ihre Buchung prüfen und sich in Kürze mit Ihnen in Verbindung setzen, falls Details geklärt werden müssen."
+    },
+    "minPrice": "mindestpreis,",
+    "maxPrice": "höchstpreis,",
+    "total": "gesamt",
+    "pricePerDay": "Preis pro Tag",
+    "iHaveReady": "Ich habe die Beschäftigungsbedingungen der",
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "dob": "Geburtsdatum",
+      "placeholderName": "z. B. Johann",
+      "placeholderLastName": "z. B. Müller",
+      "placeholderDob": "Datum auswählen",
+      "email": "E-Mail",
+      "phone": "Telefon"
+    },
+    "submitIsLoading": "Wird verarbeitet...",
+    "submit": "Auto bestellen",
+    "rules": {
+      "firstName": {
+        "required": "Geben Sie Ihren Vornamen ein"
+      },
+      "lastName": {
+        "required": "Geben Sie Ihren Nachnamen ein"
+      },
+      "dateOfBirth": {
+        "required": "Wählen Sie Ihr Geburtsdatum"
+      },
+      "email": {
+        "required": "Geben Sie Ihre E-Mail ein",
+        "format": "Ungültiges E-Mail-Format"
+      },
+      "phone": {
+        "required": "Geben Sie Ihre Telefonnummer ein"
+      },
+      "privacyPolicy": {
+        "required": "Sie müssen die Datenschutzrichtlinie akzeptieren"
+      }
+    }
+  },
+  "errors": {
+    "title": {
+      "isNotFound": "Seite nicht gefunden",
+      "403": "Zugriff verweigert",
+      "500": "Serverfehler",
+      "def": "Etwas ist schiefgelaufen"
+    },
+    "server": "Serverfehler",
+    "backHome": "Zur Startseite",
+    "reload": "Seite neu laden",
+    "technicalDetails": "Technische Details",
+    "description": {
+      "isNotFound": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+      "403": "Sie haben keine Berechtigung, diese Seite anzusehen.",
+      "500": "Unsere Server haben derzeit Probleme. Bitte versuchen Sie es in Kürze erneut.",
+      "def": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    }
+  },
+  "langSwitcher": {
+    "label": "Sprache"
+  },
+  "seo": {
+    "title": "Autovermietung in Thessaloniki | Rent-Me",
+    "description": "Günstige Autovermietung in Thessaloniki und Lagadas mit flexibler Abholung, unbegrenzten Kilometern und schneller Online-Buchung.",
+    "order": {
+      "title": "Fahrerdaten",
+      "description": "Vervollständigen Sie Ihre Buchungsdaten."
+    }
+  }
+}
