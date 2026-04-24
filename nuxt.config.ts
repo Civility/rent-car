@@ -1,25 +1,27 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
-const siteURL = "https://winter.local";
+
+const isDev = process.env.NODE_ENV !== "production";
+const siteURL = isDev ? "http://localhost:3000" : "https://rent-me.na4u.ru";
+const apiBase = isDev ? "https://winter.local" : "https://rentme.na4u.ru";
+// const siteURL = process.env.NUXT_PUBLIC_SITE_URL;
+
 const siteName = "Rent-Me";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   future: { compatibilityVersion: 4 },
   experimental: { payloadExtraction: false },
   ssr: true,
   nitro: {
-    static: true,
+    externals: {
+      inline: ["@vue/devtools-api"],
+    },
   },
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: [
-        "@vue/devtools-core",
-        "@vue/devtools-kit",
-        "@unhead/schema-org/vue",
-        "animejs",
-      ],
+      include: ["@unhead/schema-org/vue", "animejs"],
     },
   },
   devServer: {
@@ -112,7 +114,7 @@ export default defineNuxtConfig({
     "/booking": { ssr: true },
     "/booking/order": { ssr: true },
     "/api/**": {
-      proxy: `${siteURL}/api/**`,
+      proxy: `${apiBase}/api/**`,
       security: {
         rateLimiter: {
           tokensPerInterval: 30,
@@ -130,8 +132,8 @@ export default defineNuxtConfig({
     public: {
       siteURL,
       siteName: siteName,
-      apiBase: siteURL,
-      imageBase: `${siteURL}/storage/app/media/`,
+      apiBase: apiBase,
+      imageBase: `${apiBase}/storage/app/media/`,
     },
   },
   app: {
@@ -176,6 +178,7 @@ export default defineNuxtConfig({
         "img-src": ["'self'", "data:", "blob:", "https:"],
         "connect-src": [
           "'self'",
+          apiBase,
           siteURL, // бэкенд-прокси
           // "https://*.google-analytics.com", // при наличии GA — иначе удалите
         ],

@@ -1,76 +1,13 @@
 # Nuxt Minimal Starter
 
--- npx nuxi prepare
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+- APP_IP=127.0.4.127 APP_PORT=57855 node start.mjs
 
-## Setup
+## start.mjs
 
-Make sure to install dependencies:
+process.env.HOST = process.env.APP_IP || "0.0.0.0";
+process.env.PORT = process.env.APP_PORT || "3000";
+await import("./server/index.mjs");
 
-```bash
-# npm
-npm install
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@vue/devtools-api' imported from /home/c67185/rent-me.na4u.ru/app/server/node_modules/vue-router/dist/devtools-BPov6AZY.js
 
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- /app/server$ npm i @vue/devtools-api -no-save --omit=dev
