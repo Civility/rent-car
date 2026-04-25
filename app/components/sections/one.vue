@@ -72,7 +72,6 @@ const slider = [
   "intro-photo-5",
   "intro-photo-6",
   "intro-photo-7",
-  "intro-photo-8",
 ];
 // select
 // const locationOptions = [
@@ -289,7 +288,7 @@ const handleSubmit = async () => {
             src="@/assets/webp/intro-photo-8.webp"
             aria-hidden="true"
             alt="Rental car available in Thessaloniki"
-            class="hidden lg:block rounded-4xl border-2 border-white/90 shadow-lg object-cover w-fit"
+            class="hidden lg:block rounded-4xl border-2 border-white/90 shadow-lg w-2/3"
           />
           <img
             src="@/assets/webp/leaf-2.webp"

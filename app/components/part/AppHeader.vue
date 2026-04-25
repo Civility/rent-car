@@ -37,7 +37,7 @@ const menuItems = computed(() => [
         class="flex items-center gap-2 self-start z-60 relative"
       >
         <PartLogo
-          class="max-w-24 w-20 h-20 md:w-32 md:h-32 md:max-w-44 lg:max-w-48 after:content-[''] after:absolute after:right-0 after:-top-4 after:-z-10 after:h-50 after:w-50 after:bg-[url('~/assets/webp/shape.webp')] after:bg-contain after:bg-no-repeat after:rotate-60 after:-scale-x-100 after:pointer-events-none before:content-[''] before:absolute before:left-2/3 before:top-1/10 before:z-30 before:h-22 before:w-40 before:bg-[url('~/assets/webp/leaf-5.webp')] before:bg-contain before:bg-no-repeat before:pointer-events-none before:filter-[drop-shadow(-10px_3px_5px_rgba(0,0,0,0.5))]"
+          class="max-w-24 w-20 h-20 md:w-32 md:h-32 md:max-w-44 lg:max-w-48 after:content-[''] after:absolute after:right-0 after:-top-4 after:-z-10 after:h-50 after:w-50 after:bg-[url('~/assets/webp/shape.webp')] after:bg-contain after:bg-no-repeat after:rotate-60 after:-scale-x-100 after:pointer-events-none before:content-[''] before:absolute before:left-2/4 before:top-1/10 before:z-30 before:h-22 before:w-30 before:bg-[url('~/assets/webp/leaf-5.webp')] before:bg-contain before:bg-no-repeat before:pointer-events-none before:filter-[drop-shadow(-10px_3px_5px_rgba(0,0,0,0.5))]"
           class1="h-20! w-20! md:h-32! md:w-32!"
           class2="text-white!  h-13! w-13! md:h-22! md:w-22!"
           class3="text-white! h-13! w-13! md:h-22! md:w-22!"

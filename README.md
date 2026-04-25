@@ -1,6 +1,7 @@
 # Nuxt Minimal Starter
 
 - APP_IP=127.0.4.127 APP_PORT=57855 node start.mjs
+- history -c && history -w
 
 ## start.mjs
 
@@ -11,3 +12,14 @@ await import("./server/index.mjs");
 Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@vue/devtools-api' imported from /home/c67185/rent-me.na4u.ru/app/server/node_modules/vue-router/dist/devtools-BPov6AZY.js
 
 - /app/server$ npm i @vue/devtools-api -no-save --omit=dev
+
+package.json
+{
+"name": "rent-me-server",
+"type": "module",
+"scripts": {
+"iProd": "cd server && npm install --omit=dev",
+"startJS": "node start.mjs",
+"start": "APP_IP=127.0.4.127 APP_PORT=57855 node start.mjs"
+}
+}
