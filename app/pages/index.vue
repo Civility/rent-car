@@ -1,9 +1,13 @@
 <script setup>
-import { useBookingStore } from "@/store/booking";
-
 const config = useRuntimeConfig();
 const localePath = useLocalePath();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const ogLocaleMap = {
+  en: "en_US",
+  ru: "ru_RU",
+  de: "de_DE",
+  el: "el_GR",
+};
 useSeoMeta({
   title: t("seo.title"),
   description: t("seo.description"),
@@ -11,22 +15,24 @@ useSeoMeta({
   ogDescription: t("seo.description"),
   ogType: "website",
   ogUrl: config.public.siteURL,
-  ogImage: `${config.public.siteURL}/map.jpg`,
+  ogLocale: ogLocaleMap[locale.value] || "en_US",
+  ogImage: `${config.public.siteURL}/android-chrome-512x512.png`,
   twitterCard: "summary_large_image",
   twitterTitle: t("seo.title"),
   twitterDescription: t("seo.description"),
-  twitterImage: `${config.public.siteURL}/map.jpg`,
+  twitterImage: `${config.public.siteURL}/android-chrome-512x512.png`,
 });
+
 useSchemaOrg([
   {
     "@type": "AutoRental",
     "@id": `${config.public.siteURL}/#business`,
     name: config.public.siteName,
     url: config.public.siteURL,
-    image: `${config.public.siteURL}/map.jpg`,
+    image: `${config.public.siteURL}/android-chrome-512x512.png`,
     telephone: "+30 697 779 5840",
     email: "info@rent-me.gr",
-    priceRange: "$",
+    priceRange: "€",
     paymentAccepted: "Cash, VISA, MasterCard, Maestro, PayPal",
     areaServed: ["Thessaloniki", "Lagadas"],
     address: {
@@ -39,12 +45,6 @@ useSchemaOrg([
     sameAs: ["https://www.facebook.com/profile.php?id=100093357895988"],
   },
 ]);
-const { fetchLocations } = useBookingStore();
-useScrollSpy();
-
-onMounted(async () => {
-  await fetchLocations();
-});
 </script>
 <template>
   <main class="relative">

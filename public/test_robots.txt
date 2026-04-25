@@ -1,0 +1,3 @@
+User-Agent: *
+Allow: /
+Sitemap: https://rent-me.na4u.ru/sitemap.xml

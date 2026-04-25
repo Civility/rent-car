@@ -18,6 +18,11 @@ const { getCarPricing } = useCarPricing();
 const { useRentalDays } = useBookingDates();
 const rentalDays = useRentalDays(searchForm);
 const { t } = useI18n();
+useSeoMeta({
+  title: t("seo.booking.title"),
+  description: t("seo.booking.description"),
+  robots: "noindex,follow", // booking — динамическая, индексировать не нужно
+});
 // --- Guard + загрузка машин ---
 onMounted(async () => {
   if (searchForm.value.dateFrom === null || searchForm.value.dateTo === null) {
@@ -199,10 +204,16 @@ const resetFilters = () => {
     <!-- ПАНЕЛЬ ФИЛЬТРОВ -->
     <div
       v-if="filteredCars.length != 0"
-      class="flex lg:hidden justify-end mb-4 px-4"
+      class="flex justify-end mb-4 px-4 lg:items-center lg:px-0 items-end"
     >
+      <h1
+        v-if="filteredCars.length != 0"
+        class="w-full lg:w-fit font-bold truncate lg:translate-none"
+      >
+        {{ $t("booking.h1") }}
+      </h1>
       <UIBtn
-        class="border-2 border-sec text-sec! transition-colors active:bg-sec/70 px-2"
+        class="lg:hidden! border-2 border-sec text-sec! transition-colors active:bg-sec/70 px-2"
         @click="isFiltersOpen = !isFiltersOpen"
       >
         <svg
@@ -223,13 +234,13 @@ const resetFilters = () => {
       </UIBtn>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-8 px-4 lg:px-0">
+    <div class="flex flex-col lg:flex-row gap-4 px-4 lg:px-0">
       <!-- САЙДБАР С ФИЛЬТРАМИ -->
       <aside
         :class="[
-          'flex lg:flex-col flex-row md:items-start lg:items-stretch justify-start flex-wrap lg:w-75 w-full gap-8 lg:shrink-0 lg:border border-gray-200 rounded-lg lg:p-6 lg:h-fit sticky lg:top-24 bg-white transition-all duration-500 overflow-hidden',
+          'flex lg:flex-col flex-row lg:sticky lg:top-42 lg:self-start md:items-start lg:items-stretch justify-start flex-wrap lg:w-[25vw] w-full lg:p-6 lg:gap-4 gap-4 lg:shrink-0 lg:border border-gray-200 rounded-lg  bg-white transition-all duration-500 lg:overflow-visible overflow-hidden',
           isFiltersOpen
-            ? 'max-h-375 opacity-100 p-6 border mb-8 lg:mb-0'
+            ? 'max-h-fit opacity-100 p-6 border mb-0'
             : 'max-h-0 opacity-0 p-0 border-0 lg:max-h-none lg:opacity-100 lg:p-6 lg:border',
         ]"
       >
@@ -291,7 +302,7 @@ const resetFilters = () => {
         </div>
 
         <!-- Filter: Seats -->
-        <div class="w-full md:w-1/2 lg:w-auto order-3">
+        <div class="w-full md:w-2/5 lg:w-auto order-3">
           <h3 class="font-bold mb-4">{{ $t("booking.seats") }}</h3>
           <div class="relative w-full px-1 text-sm">
             <div
@@ -376,9 +387,11 @@ const resetFilters = () => {
       </aside>
 
       <!-- СПИСОК КАРТОЧЕК АВТОМОБИЛЕЙ -->
-      <h1 v-if="filteredCars.length != 0">{{ $t("booking.h1") }}</h1>
 
       <div class="flex-1 flex flex-col gap-4">
+        <!-- <h1 v-if="filteredCars.length != 0" class="w-full lg:w-fit">
+          {{ $t("booking.h1") }}
+        </h1> -->
         <!-- Панель сортировки -->
         <div
           class="hidden lg:flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200"

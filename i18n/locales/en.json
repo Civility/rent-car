@@ -316,6 +316,10 @@
   "seo": {
     "title": "Car Rental in Thessaloniki | Rent-Me",
     "description": "Affordable car rental in Thessaloniki and Lagadas with flexible pick-up, unlimited mileage and fast online booking.",
+    "booking": {
+      "title": "Choose Your Car",
+      "description": "Browse available vehicles and select the best option for your trip."
+    },
     "order": {
       "title": "Driver Details",
       "description": "Complete your booking details."

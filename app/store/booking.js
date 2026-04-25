@@ -29,20 +29,17 @@ const saveToSession = (searchForm) => {
   if (import.meta.server) return;
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(searchForm));
+    // eslint-disable-next-line no-empty
   } catch {}
 };
 export const useBookingStore = defineStore("booking", {
   state: () => ({
     searchForm: {
       ...createDefaultSearchForm(),
-      // Стартовые даты для dev-удобства. Можно убрать в проде.
-      // dateFrom: "Mon Apr 27 2026 14:45:00 GMT+0300",
-      // dateTo: "Thu Apr 30 2026 14:45:00 GMT+0300",
       ...(loadFromSession() || {}),
     },
     locations: [],
     cars: [],
-    isLoading: false,
     orderError: null,
     orderSuccess: false,
   }),
@@ -61,6 +58,7 @@ export const useBookingStore = defineStore("booking", {
 
   actions: {
     async fetchLocations() {
+      if (this.locations.length) return { success: true, data: this.locations };
       const main = useMainStore();
       main.setLoading(true);
 
@@ -104,10 +102,10 @@ export const useBookingStore = defineStore("booking", {
     },
 
     async submitOrder(driverDetails) {
-      this.isLoading = true;
       this.orderError = null;
       this.orderSuccess = false;
-
+      const main = useMainStore();
+      main.setLoading(true);
       try {
         if (!this.locations.length) {
           await this.fetchLocations();
@@ -134,7 +132,7 @@ export const useBookingStore = defineStore("booking", {
           "Something went wrong. Please try again.";
         return { success: false, error: this.orderError };
       } finally {
-        this.isLoading = false;
+        main.setLoading(false);
       }
     },
 
@@ -156,10 +154,6 @@ export const useBookingStore = defineStore("booking", {
       if (differentLocation) {
         this.searchForm.returnLocation = this.searchForm.location;
       }
-    },
-
-    setSearchForm(payload) {
-      Object.assign(this.searchForm, payload, { lastActive: Date.now() });
     },
     setSearchForm(payload) {
       Object.assign(this.searchForm, payload, { lastActive: Date.now() });

@@ -341,6 +341,10 @@
   "seo": {
     "title": "Autovermietung in Thessaloniki | Rent-Me",
     "description": "Günstige Autovermietung in Thessaloniki und Lagadas mit flexibler Abholung, unbegrenzten Kilometern und schneller Online-Buchung.",
+    "booking": {
+      "title": "Wählen Sie Ihr Auto",
+      "description": "Durchsuchen Sie die verfügbaren Fahrzeuge und wählen Sie die beste Option für Ihre Reise."
+    },
     "order": {
       "title": "Fahrerdaten",
       "description": "Vervollständigen Sie Ihre Buchungsdaten."

@@ -32,21 +32,20 @@ const menuItems = computed(() => [
       class="lg:container lg:mx-auto md:h-20 h-15 flex items-center justify-between shrink-0"
       :class="{ 'h-full items-start!': isMenuOpen }"
     >
-      <ClientOnly
-        ><NuxtLink
-          :to="localePath('/')"
-          class="flex items-center gap-2 self-start z-60 relative"
-        >
-          <PartLogo
-            class="max-w-24 w-20 h-20 md:w-32 md:h-32 md:max-w-44 lg:max-w-48 after:content-[''] after:absolute after:right-0 after:-top-4 after:-z-10 after:h-50 after:w-50 after:bg-[url('~/assets/webp/shape.webp')] after:bg-contain after:bg-no-repeat after:rotate-60 after:-scale-x-100 after:pointer-events-none before:content-[''] before:absolute before:left-2/3 before:top-1/10 before:z-30 before:h-22 before:w-40 before:bg-[url('~/assets/webp/leaf-5.webp')] before:bg-contain before:bg-no-repeat before:pointer-events-none before:filter-[drop-shadow(-10px_3px_5px_rgba(0,0,0,0.5))]"
-            class1="h-20! w-20! md:h-32! md:w-32!"
-            class2="text-white!  h-13! w-13! md:h-22! md:w-22!"
-            class3="text-white! h-13! w-13! md:h-22! md:w-22!"
-          /> </NuxtLink
-      ></ClientOnly>
+      <NuxtLink
+        :to="localePath('/')"
+        class="flex items-center gap-2 self-start z-60 relative"
+      >
+        <PartLogo
+          class="max-w-24 w-20 h-20 md:w-32 md:h-32 md:max-w-44 lg:max-w-48 after:content-[''] after:absolute after:right-0 after:-top-4 after:-z-10 after:h-50 after:w-50 after:bg-[url('~/assets/webp/shape.webp')] after:bg-contain after:bg-no-repeat after:rotate-60 after:-scale-x-100 after:pointer-events-none before:content-[''] before:absolute before:left-2/3 before:top-1/10 before:z-30 before:h-22 before:w-40 before:bg-[url('~/assets/webp/leaf-5.webp')] before:bg-contain before:bg-no-repeat before:pointer-events-none before:filter-[drop-shadow(-10px_3px_5px_rgba(0,0,0,0.5))]"
+          class1="h-20! w-20! md:h-32! md:w-32!"
+          class2="text-white!  h-13! w-13! md:h-22! md:w-22!"
+          class3="text-white! h-13! w-13! md:h-22! md:w-22!"
+        />
+      </NuxtLink>
 
       <nav
-        class="mx-auto pt-8 lg:block hidden absolute lg:static inset-0 max-lg:container"
+        class="mx-auto pt-8 md:pt-20 lg:pt-8 lg:block hidden absolute lg:static inset-0 max-lg:container"
         :class="{ 'block! mt-20 pt-0 ': isMenuOpen }"
       >
         <ul
@@ -54,12 +53,12 @@ const menuItems = computed(() => [
           :class="{ 'flex-col items-start': isMenuOpen }"
         >
           <li v-for="item in menuItems" :key="item.id" class="w-full">
-            <a
-              :href="`/#${item.id}`"
+            <NuxtLink
+              :to="localePath('/') + '#' + item.id"
               class="text-zinc-100 active:text-white lg:hover:text-zinc-100 opacity-80 text-nowrap inline-flex w-full hover:opacity-100 relative pl-6 text-lg lg:text-md font-medium transition-colors before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-4 before:h-4 before:rounded-full before:bg-[url('~/assets/icons/menu-star.svg')] before:bg-no-repeat before:bg-center before:bg-contain"
             >
               {{ item.name }}
-            </a>
+            </NuxtLink>
           </li>
         </ul>
         <address
@@ -121,10 +120,8 @@ const menuItems = computed(() => [
         </address>
       </nav>
 
-      <div
-        class="flex items-center gap-4 z-60 self-start pt-4 absolute right-0"
-      >
-        <PartLangSwitcher />
+      <div class="flex items-center gap-4 z-60 py-4 lg:py-0 absolute right-0">
+        <PartLangSwitcher class="lg:mr-8" />
         <UIBtn
           clear
           class="lg:hidden! p-4! text-white hover:bg-white/10 rounded-xl transition-colors active:scale-90"

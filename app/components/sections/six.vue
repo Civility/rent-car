@@ -1,151 +1,151 @@
 <script setup>
-  import { useVuelidate } from "@vuelidate/core";
-  import { storeToRefs } from "pinia";
-  import { useMainStore } from "@/store/main";
-  import ICON_VIBER from "@/assets/icons/viber.svg";
-  import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
-  import ICON_FACEBOOK from "@/assets/icons/facebook.svg";
-  import {
-    required,
-    email,
-    minLength,
-    maxLength,
-    helpers,
-  } from "@vuelidate/validators";
-  import { vMaska } from "maska/vue";
+import { useVuelidate } from "@vuelidate/core";
+import { storeToRefs } from "pinia";
+import { useMainStore } from "@/store/main";
+import ICON_VIBER from "@/assets/icons/viber.svg";
+import ICON_WHATSAPP from "@/assets/icons/whatsapp.svg";
+import ICON_FACEBOOK from "@/assets/icons/facebook.svg";
+import {
+  required,
+  email,
+  minLength,
+  maxLength,
+  helpers,
+} from "@vuelidate/validators";
+import { vMaska } from "maska/vue";
 
-  const { sendCallMeBack } = useMainStore();
-  const { lang } = storeToRefs(useMainStore());
+const { sendCallMeBack } = useMainStore();
+const { lang } = storeToRefs(useMainStore());
 
-  const startTime = ref(0);
+const startTime = ref(0);
 
-  const trapValue = ref("");
-  onMounted(() => {
-    startTime.value = Date.now();
-  });
-  const form = ref({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-    isConsent: false,
-  });
-  const noLinksOrHtml = helpers.regex(/^(?!.*(<[^>]+>|https?:\/\/|www\.)).*/i);
-  const isSuccessModalOpen = ref(false);
-  const lettersOnly = helpers.regex(/^[\p{L}\s\-']+$/u);
-  const minTwoWords = (value) => {
-    if (!value) return false;
-    const words = value.trim().split(/\s+/);
-    return words.length >= 2;
+const trapValue = ref("");
+onMounted(() => {
+  startTime.value = Date.now();
+});
+const form = ref({
+  name: "",
+  email: "",
+  phone: "",
+  message: "",
+  isConsent: false,
+});
+const noLinksOrHtml = helpers.regex(/^(?!.*(<[^>]+>|https?:\/\/|www\.)).*/i);
+const isSuccessModalOpen = ref(false);
+const lettersOnly = helpers.regex(/^[\p{L}\s\-']+$/u);
+const minTwoWords = (value) => {
+  if (!value) return false;
+  const words = value.trim().split(/\s+/);
+  return words.length >= 2;
+};
+// Правила валидации
+const rules = {
+  name: {
+    required: helpers.withMessage(
+      $t("contacts.validations[0].required"),
+      required,
+    ),
+    minLength: helpers.withMessage(
+      $t("contacts.validations[0].minLength"),
+      minLength(2),
+    ),
+    maxLength: helpers.withMessage(
+      $t("contacts.validations[0].maxLength"),
+      maxLength(32),
+    ),
+    lettersOnly: helpers.withMessage(
+      $t("contacts.validations[0].lettersOnly"),
+      lettersOnly,
+    ),
+  },
+  email: {
+    required: helpers.withMessage(
+      $t("contacts.validations[1].required"),
+      required,
+    ),
+    email: helpers.withMessage($t("contacts.validations[1].email"), email),
+  },
+  // Указываем минимальную длину с учетом маски, например: +1 (123) 456-7890 (длина 17)
+  // Но вы можете адаптировать длину под свою страну
+  phone: {
+    required: helpers.withMessage(
+      $t("contacts.validations[2].required"),
+      required,
+    ),
+    minLength: helpers.withMessage(
+      $t("contacts.validations[2].minLength"),
+      minLength(17),
+    ),
+  },
+  message: {
+    required: helpers.withMessage(
+      $t("contacts.validations[3].required"),
+      required,
+    ),
+    minLength: helpers.withMessage(
+      $t("contacts.validations[3].minLength"),
+      minLength(6),
+    ),
+    minTwoWords: helpers.withMessage(
+      $t("contacts.validations[3].minTwoWords"),
+      minTwoWords,
+    ),
+    noLinksOrHtml: helpers.withMessage(
+      $t("contacts.validations[3].noLinksOrHtml"),
+      noLinksOrHtml,
+    ),
+  },
+};
+
+const v$ = useVuelidate(rules, form, { $autoDirty: true });
+const errorMessage = ref("");
+const resetForm = () => {
+  form.value.name = "";
+  form.value.email = "";
+  form.value.phone = "";
+  form.value.message = "";
+  form.value.isConsent = false;
+  trapValue.value = "";
+  v$.value.$reset();
+};
+
+const handleSubmit = async () => {
+  errorMessage.value = "";
+
+  const isValid = await v$.value.$validate();
+  if (!isValid) return;
+
+  const timeElapsed = Date.now() - startTime.value;
+  if (timeElapsed < 3000 || form.value.isConsent || trapValue.value !== "") {
+    console.log("Spam detected. Blocked silently.");
+    isSuccessModalOpen.value = true;
+    resetForm();
+    return;
+  }
+
+  const payload = {
+    name: form.value.name,
+    email: form.value.email,
+    phone: form.value.phone,
+    message: form.value.message,
+    locale: lang.value,
+    started_at: startTime.value,
+    is_consent: form.value.isConsent,
+    website_url: trapValue.value,
   };
-  // Правила валидации
-  const rules = {
-    name: {
-      required: helpers.withMessage(
-        $t("contacts.validations[0].required"),
-        required,
-      ),
-      minLength: helpers.withMessage(
-        $t("contacts.validations[0].minLength"),
-        minLength(2),
-      ),
-      maxLength: helpers.withMessage(
-        $t("contacts.validations[0].maxLength"),
-        maxLength(32),
-      ),
-      lettersOnly: helpers.withMessage(
-        $t("contacts.validations[0].lettersOnly"),
-        lettersOnly,
-      ),
-    },
-    email: {
-      required: helpers.withMessage(
-        $t("contacts.validations[1].required"),
-        required,
-      ),
-      email: helpers.withMessage($t("contacts.validations[1].email"), email),
-    },
-    // Указываем минимальную длину с учетом маски, например: +1 (123) 456-7890 (длина 17)
-    // Но вы можете адаптировать длину под свою страну
-    phone: {
-      required: helpers.withMessage(
-        $t("contacts.validations[2].required"),
-        required,
-      ),
-      minLength: helpers.withMessage(
-        $t("contacts.validations[2].minLength"),
-        minLength(17),
-      ),
-    },
-    message: {
-      required: helpers.withMessage(
-        $t("contacts.validations[3].required"),
-        required,
-      ),
-      minLength: helpers.withMessage(
-        $t("contacts.validations[3].minLength"),
-        minLength(6),
-      ),
-      minTwoWords: helpers.withMessage(
-        $t("contacts.validations[3].minTwoWords"),
-        minTwoWords,
-      ),
-      noLinksOrHtml: helpers.withMessage(
-        $t("contacts.validations[3].noLinksOrHtml"),
-        noLinksOrHtml,
-      ),
-    },
-  };
 
-  const v$ = useVuelidate(rules, form, { $autoDirty: true });
-  const errorMessage = ref("");
-  const resetForm = () => {
-    form.value.name = "";
-    form.value.email = "";
-    form.value.phone = "";
-    form.value.message = "";
-    form.value.isConsent = false;
-    trapValue.value = "";
-    v$.value.$reset();
-  };
+  const result = await sendCallMeBack(payload);
 
-  const handleSubmit = async () => {
-    errorMessage.value = "";
-
-    const isValid = await v$.value.$validate();
-    if (!isValid) return;
-
-    const timeElapsed = Date.now() - startTime.value;
-    if (timeElapsed < 3000 || form.value.isConsent || trapValue.value !== "") {
-      console.log("Spam detected. Blocked silently.");
-      isSuccessModalOpen.value = true;
-      resetForm();
-      return;
-    }
-
-    const payload = {
-      name: form.value.name,
-      email: form.value.email,
-      phone: form.value.phone,
-      message: form.value.message,
-      locale: lang.value,
-      started_at: startTime.value,
-      is_consent: form.value.isConsent,
-      website_url: trapValue.value,
-    };
-
-    const result = await sendCallMeBack(payload);
-
-    if (result.success) {
-      isSuccessModalOpen.value = true;
-      resetForm();
-    } else {
-      errorMessage.value = result.error || $t("contacts.resultError");
-    }
-  };
-  const handleSuccessModalClose = () => {
-    isSuccessModalOpen.value = false;
-  };
+  if (result.success) {
+    isSuccessModalOpen.value = true;
+    resetForm();
+  } else {
+    errorMessage.value = result.error || $t("contacts.resultError");
+  }
+};
+const handleSuccessModalClose = () => {
+  isSuccessModalOpen.value = false;
+};
 </script>
 <template>
   <section class="relative md:pt-30 pb-20 md:pb-30 lg:pb-50">
@@ -154,43 +154,50 @@
         src="@/assets/webp/contacts-bg.webp"
         alt="contacts"
         aria-hidden="true"
-        class="object-cover w-full h-full" />
+        class="object-cover w-full h-full"
+      />
     </span>
 
     <div class="relative lg:container lg:mx-auto px-4">
       <div class="relative grid grid-cols-2">
         <div
-          class="absolute -top-30 -left-[2%] w-60 h-60 flex items-center justify-center">
+          class="absolute -top-30 left-[-2%] w-60 h-60 flex items-center justify-center"
+        >
           <!-- Левый лист (начинает двигаться из левой части) -->
           <img
             src="@/assets/webp/leaf-1.webp"
             alt="six-leaf"
             aria-hidden="true"
-            class="absolute -scale-x-100 z-10 left-0 top-10 w-16 h-16 object-contain rotate-45 animate-leaf-orbit" />
+            class="absolute -scale-x-100 z-10 left-0 top-10 w-16 h-16 object-contain rotate-45 animate-leaf-orbit"
+          />
 
           <!-- Рука по центру (над логотипом) -->
           <img
             src="@/assets/webp/logo-hand.webp"
             alt="six-hand"
             aria-hidden="true"
-            class="hidden md:block absolute left-15 top-8.5 z-20 w-50 h-50 object-contain -mt-20" />
+            class="hidden md:block absolute left-15 top-8.5 z-20 w-50 h-50 object-contain -mt-20"
+          />
 
           <!-- Логотип по центру базы -->
           <PartLogo
             class="h-40 w-40 z-10 absolute -top-10 left-5 hidden md:flex"
             class1="h-40 w-40"
             class2="text-white! h-25 w-25"
-            class3="text-white! h-25 w-25" />
+            class3="text-white! h-25 w-25"
+          />
 
           <!-- Правый лист (начинает двигаться из правой части) -->
           <img
             src="@/assets/webp/leaf-5.webp"
             alt="six-leaf-5"
             aria-hidden="true"
-            class="absolute z-10 -right-10 top-10 md:-top-10 w-24 h-24 object-contain animate-leaf-orbit-reverse" />
+            class="absolute z-10 -right-10 top-10 md:-top-10 w-24 h-24 object-contain animate-leaf-orbit-reverse"
+          />
         </div>
         <div
-          class="col-span-full lg:col-span-1 -mx-4 md:mx-0 py-7 px-5 rounded-t-4xl lg:rounded-r-none lg:rounded-l-4xl border-t-2 border-x-2 border-white bg-linear-to-r from-transparent to-white/90">
+          class="col-span-full lg:col-span-1 -mx-4 md:mx-0 py-7 px-5 rounded-t-4xl lg:rounded-r-none lg:rounded-l-4xl border-t-2 border-x-2 border-white bg-linear-to-r from-transparent to-white/90"
+        >
           <h3 class="text-4xl mb-7">{{ $t("contacts.callback") }}</h3>
           <p class="text-lg mb-7 leading-5">
             {{ $t("contacts.leaveDetails0") }} <br />
@@ -200,10 +207,12 @@
             <form
               id="callMeBack"
               class="grid lg:grid-cols-3 grid-cols-1 gap-5 lg:gap-2.5 w-full"
-              @submit.prevent="handleSubmit">
+              @submit.prevent="handleSubmit"
+            >
               <div
                 class="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
-                aria-hidden="true">
+                aria-hidden="true"
+              >
                 <label for="consent">{{
                   $t("contacts.formLabelConsent")
                 }}</label>
@@ -211,7 +220,8 @@
                   id="consent"
                   v-model="form.isConsent"
                   type="checkbox"
-                  tabindex="-1" />
+                  tabindex="-1"
+                />
                 <label for="website_url">{{
                   $t("contacts.formLabelWebsite")
                 }}</label>
@@ -221,7 +231,8 @@
                   type="text"
                   name="website_url"
                   tabindex="-1"
-                  autocomplete="off" />
+                  autocomplete="off"
+                />
               </div>
 
               <!-- Имя -->
@@ -238,10 +249,12 @@
                     v$.name.$error
                       ? 'border-red-500'
                       : 'border-zinc-200 focus:border-main'
-                  " />
+                  "
+                />
                 <p
                   v-if="v$.name.$error"
-                  class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
                   {{ v$.name.$errors[0].$message }}
                 </p>
               </div>
@@ -260,10 +273,12 @@
                     v$.email.$error
                       ? 'border-red-500'
                       : 'border-zinc-200 focus:border-main'
-                  " />
+                  "
+                />
                 <p
                   v-if="v$.email.$error"
-                  class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
                   {{ v$.email.$errors[0].$message }}
                 </p>
               </div>
@@ -283,10 +298,12 @@
                     v$.phone.$error
                       ? 'border-red-500'
                       : 'border-zinc-200 focus:border-main'
-                  " />
+                  "
+                />
                 <p
                   v-if="v$.phone.$error"
-                  class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
                   {{ v$.phone.$errors[0].$message }}
                 </p>
               </div>
@@ -304,10 +321,12 @@
                     v$.message.$error
                       ? 'border-red-500'
                       : 'border-zinc-200 focus:border-main'
-                  " />
+                  "
+                />
                 <p
                   v-if="v$.message.$error"
-                  class="text-red-500 text-xs mt-1.5 px-2 font-medium">
+                  class="text-red-500 text-xs mt-1.5 px-2 font-medium"
+                >
                   {{ v$.message.$errors[0].$message }}
                 </p>
               </div>
@@ -318,24 +337,28 @@
                 main
                 :disabled="v$.$invalid"
                 class="col-span-full w-full text-lg font-black uppercase transition-colors py-4! rounded-2xl shadow-lg mt-2"
-                :class="{ 'opacity-50 bg-zinc-400!': v$.$error }">
+                :class="{ 'opacity-50 bg-zinc-400!': v$.$error }"
+              >
                 {{ $t("contacts.fields.send") }}
               </UIBtn>
               <p
                 v-if="errorMessage"
-                class="col-span-full text-red-600 text-sm font-semibold text-center">
+                class="col-span-full text-red-600 text-sm font-semibold text-center"
+              >
                 {{ errorMessage }}
               </p>
             </form>
           </ClientOnly>
         </div>
         <div
-          class="relative col-span-full lg:col-span-1 bg-main-darkser/80 px-7 py-5 text-smoke rounded-b-4xl lg:rounded-l-none lg:rounded-r-4xl overflow-hidden">
+          class="relative col-span-full lg:col-span-1 bg-main-darkser/80 px-7 py-5 text-smoke rounded-b-4xl lg:rounded-l-none lg:rounded-r-4xl overflow-hidden"
+        >
           <PartLogo
             class="w-65 h-65 -z-10 absolute! -right-1/6 top-1/6 -rotate-30"
             class1="hidden!"
             class2="text-smoke-dark! w-60 h-60"
-            class3="text-smoke-dark! w-60 h-60" />
+            class3="text-smoke-dark! w-60 h-60"
+          />
           <h2 class="mb-7 text-3xl">{{ $t("contacts.title") }}</h2>
           <p class="mb-4 text-lg">{{ $t("contacts.subtitle") }}</p>
           <p class="mb-8 text-lg">
@@ -344,18 +367,10 @@
           </p>
           <ul class="gap-2 flex flex-col text-3xl font-semibold mb-20">
             <li>
-              <a
-                href="tel:+306977795840"
-                target="_blank"
-                >+306977795840</a
-              >
+              <a href="tel:+306977795840" target="_blank">+306977795840</a>
             </li>
             <li>
-              <a
-                href="tel:+302394309999"
-                target="_blank"
-                >+302394309999</a
-              >
+              <a href="tel:+302394309999" target="_blank">+302394309999</a>
             </li>
           </ul>
           <div class="flex gap-4">
@@ -364,46 +379,46 @@
               target="_blank"
               rel="noopener"
               aria-label="Facebook"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_FACEBOOK"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_FACEBOOK" class="text-smoke w-8 h-8" />
             </a>
             <a
               href="viber://chat?number=%2B306977795840"
               aria-label="Viber"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_VIBER"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_VIBER" class="text-smoke w-8 h-8" />
             </a>
             <a
               href="https://wa.me/306977795840"
               target="_blank"
               rel="noopener"
               aria-label="WhatsApp"
-              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2">
-              <UISvg
-                :svg="ICON_WHATSAPP"
-                class="text-smoke w-8 h-8" />
+              class="border border-transparent hover:border-white hover:bg-smoke-dark/50 rounded-4xl p-2"
+            >
+              <UISvg :svg="ICON_WHATSAPP" class="text-smoke w-8 h-8" />
             </a>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="w-full h-full overflow-hidden left-auto -mt-20 -mb-20 lg:-mb-50 -z-10 relative">
+      class="w-full h-full overflow-hidden left-auto -mt-20 -mb-20 lg:-mb-50 -z-10 relative"
+    >
       <img
         src="/map.jpg"
         alt="Map showing the Rent-Me office location in Lagadas, Thessaloniki"
-        class="h-142.5 w-full object-cover" />
+        class="h-142.5 w-full object-cover"
+      />
     </div>
     <UIModal
       v-model="isSuccessModalOpen"
       type="success"
       :title="$t('contacts.modal.title')"
       @close="handleSuccessModalClose"
-      @confirm="handleSuccessModalClose">
+      @confirm="handleSuccessModalClose"
+    >
       <template #note>
         {{ $t("contacts.modal.note") }}
       </template>

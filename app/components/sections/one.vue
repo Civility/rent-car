@@ -1,13 +1,5 @@
 <script setup>
-import {
-  differenceInHours,
-  isValid,
-  parseISO,
-  set,
-  addHours,
-  isSameDay,
-  format,
-} from "date-fns";
+import { differenceInHours, isValid, parseISO, format } from "date-fns";
 import { storeToRefs } from "pinia";
 import { useVuelidate } from "@vuelidate/core";
 import { required, requiredIf, helpers } from "@vuelidate/validators";
@@ -28,15 +20,23 @@ import "swiper/css/effect-fade";
 import { useBookingStore } from "@/store/booking";
 // import { useMainStore } from "@/store/main";
 import { navigateTo } from "#app";
+
 const { dateLocale } = useDateLocale();
 const { isDesktop } = useDevice();
 const localePath = useLocalePath();
 
-const { setSearchForm, setLocation, setReturnLocation, setDifferentLocation } =
-  useBookingStore();
+const {
+  fetchLocations,
+  setSearchForm,
+  setLocation,
+  setReturnLocation,
+  setDifferentLocation,
+} = useBookingStore();
 const { searchForm, locations } = storeToRefs(useBookingStore());
 
-onMounted(() => {
+onMounted(async () => {
+  if (!locations.value.length) await fetchLocations();
+
   startTime.value = Date.now();
   const prefixes = ["website", "company", "url", "fax"];
   trapFieldName.value =
@@ -175,27 +175,6 @@ const getDateTime = (date, time) => {
   return `${formatDate(date)} ${formatTime(time)}:00`;
 };
 
-const minTimeTo = computed(() => {
-  if (!form.value) return null;
-  if (!form.value.timeFrom || typeof form.value.timeFrom !== "object")
-    return null;
-  if (
-    !form.value.dateFrom ||
-    !form.value.dateTo ||
-    formatDate(form.value.dateFrom) !== formatDate(form.value.dateTo)
-  )
-    return null;
-
-  const base = set(new Date(), {
-    hours: form.value.timeFrom.hours,
-    minutes: form.value.timeFrom.minutes,
-  });
-  const plusHour = addHours(base, 1);
-  // Проверяем, наступил ли следующий день
-  if (!isSameDay(base, plusHour)) return { hours: 24, minutes: 0 };
-  return { hours: plusHour.getHours(), minutes: plusHour.getMinutes() };
-});
-
 const isFormDisabled = computed(() => {
   // Безопасная проверка: если form.value.value еще нет, кнопка недоступна
   if (!form.value) return true;
@@ -245,7 +224,7 @@ const handleSubmit = async () => {
       src="@/assets/webp/intro-leaf.webp"
       alt="leaf"
       aria-hidden="true"
-      class="h-auto lg:w-[20%] w-fit object-cover object-center absolute -bottom-1/5 lg:-bottom-1/4 -left-[5%] z-20 -rotate-15 animate-leaf-orbit"
+      class="h-auto lg:w-[20%] w-fit object-cover object-center absolute -bottom-1/5 lg:-bottom-1/4 left-[-5%] z-20 -rotate-15 animate-leaf-orbit"
     />
     <div
       class="container col-start-1 row-start-1 justify-self-center relative z-10 lg:pt-30 lg:pb-24 pt-10 pb-12"
